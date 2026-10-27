@@ -27,6 +27,14 @@ Planning (`docs/planning/`):
 - [decisions.md](docs/planning/decisions.md): decisions made so far and the defaults in force.
 - [open-questions.md](docs/planning/open-questions.md): remaining decisions, each with the default that will be used if unanswered.
 
+## Build and run (planned)
+
+The app compiles to a static single-page site (`vite build` → `dist/`) with no
+backend. Run it locally with the dev server or any static file server on
+`localhost`; a single-file `standalone.html` build will also open straight from
+disk (microphone works in Chrome/Firefox on `file://`, PWA features do not).
+Details and caveats: [docs/planning/decisions.md](docs/planning/decisions.md).
+
 ## Core facts in one paragraph
 
 Standard ukulele tuning is G4-C4-E4-A4 (392.00, 261.63, 329.63, 440.00 Hz),

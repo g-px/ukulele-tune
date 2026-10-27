@@ -44,7 +44,7 @@ is given, that is what will be built if there is no answer.
     designed so the worklet can replace it.*
 13. **Browser support floor:** is iOS Safari 14.5+ / Chrome 90+ acceptable?
     Any need for older Android WebViews?
-14. **Hosting and deploy:** GitHub Pages from this repo, Vercel, Netlify,
+14. **[partly decided: static build, runs locally from dist/ or a single standalone html]** **Hosting and deploy:** GitHub Pages from this repo, Vercel, Netlify,
     your own domain? Should CI (GitHub Actions) run lint, unit tests and a
     Playwright smoke test on every PR? *Default: GitHub Pages via Actions,
     CI on PRs.*
@@ -55,7 +55,7 @@ is given, that is what will be built if there is no answer.
     code (pitchy) is acceptable.
 
 ## D. Process
-17. Should work go straight to `main` or via branches and pull requests?
+17. **[decided: trunk-based, direct to main when all checks pass]** Should work go straight to `main` or via branches and pull requests?
 18. Do you want a milestone split (M1 math + detector with tests, M2 mic +
     needle UI, M3 presets/settings/help, M4 PWA + deploy), or one shot?
 19. Is there anything in the knowledge files (`docs/knowledge/`) that
