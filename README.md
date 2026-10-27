@@ -24,7 +24,8 @@ Knowledge base (`docs/knowledge/`):
 
 Planning (`docs/planning/`):
 
-- [open-questions.md](docs/planning/open-questions.md): decisions needed before implementation, each with the default that will be used if unanswered.
+- [decisions.md](docs/planning/decisions.md): decisions made so far and the defaults in force.
+- [open-questions.md](docs/planning/open-questions.md): remaining decisions, each with the default that will be used if unanswered.
 
 ## Core facts in one paragraph
 
