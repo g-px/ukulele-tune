@@ -9,7 +9,7 @@ export const HIGHPASS_HZ = 80;
 export const LOWPASS_HZ = 3000;
 
 export const CLARITY_THRESHOLD = 0.9;
-export const DEFAULT_GATE_DBFS = -45;
+export const DEFAULT_GATE_DBFS = -55;
 export const GATE_MIN_DBFS = -70;
 export const GATE_MAX_DBFS = -20;
 

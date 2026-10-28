@@ -31,6 +31,7 @@ Recorded as they are made. Each entry: decision, date, reason.
 
 | 11 | **Implementation deviations from design.md**: Vite 8, Vitest 5, TypeScript 5.9 (TypeScript 7 is outside typescript-eslint's supported range); view logic lives in pure `src/state/derive.ts`; `nearestString` prefers an exact octave match when no string is within 100 cents (prevents reading a high-G string on a low-G tuning as "A, 200 cents flat"); tuner adds a 60 ms attack skip; octave-warning state uses a compact layout to fit 390×844. | 2026-10-28 | All covered by tests. |
 | 12 | **License MIT; hosting GitHub Pages via Actions** (also serves `standalone.html`). | 2026-10-28 | Pages must be enabled once in repository settings. |
+| 13 | **Mic path hardening after a "no sound detected" report.** The analyser now feeds a zero-gain node into `ctx.destination` (WebKit reads silence from an analyser that does not reach the destination); the mic stream is requested before the AudioContext is created or resumed (iOS can give silence to a context made before capture); the context is resumed when iOS interrupts it; default noise gate lowered from −45 to −55 dBFS because raw mics with auto-gain off are quieter than assumed. | 2026-10-28 | The 0.9 clarity threshold still rejects noise below the gate. Saved settings keep their old gate. |
 
 ## Defaults in force until overridden
 (see `open-questions.md` for the full list)

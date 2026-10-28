@@ -14,8 +14,13 @@ export interface MicSession {
   stop(): void;
 }
 
-/** Request the mic with all voice processing off and build the analysis graph. */
-export async function startMic(ctx: AudioContext, opts: MicOptions): Promise<MicSession> {
+/**
+ * Request the mic with all voice processing off. Called before the
+ * AudioContext exists: iOS Safari can deliver silence to a context created
+ * before capture started, and an active capture lets the context start
+ * without a fresh user gesture.
+ */
+export async function requestMicStream(): Promise<MediaStream> {
   const md = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
   if (!md?.getUserMedia) {
     throw Object.assign(new Error("getUserMedia unsupported"), { name: "UnsupportedError" });
@@ -29,6 +34,15 @@ export async function startMic(ctx: AudioContext, opts: MicOptions): Promise<Mic
     },
     video: false,
   });
+  return stream;
+}
+
+/** Build the analysis graph for an already granted stream. */
+export function createMicSession(
+  ctx: AudioContext,
+  stream: MediaStream,
+  opts: MicOptions,
+): MicSession {
   const track = stream.getAudioTracks()[0];
   const settings = track?.getSettings() ?? {};
   console.info("[ukulele-tune] mic settings", settings, "sampleRate", ctx.sampleRate);
@@ -45,7 +59,15 @@ export async function startMic(ctx: AudioContext, opts: MicOptions): Promise<Mic
     Q: 0.707,
   });
   const analyser = new AnalyserNode(ctx, { fftSize: opts.bufferSize, smoothingTimeConstant: 0 });
-  source.connect(highpass).connect(lowpass).connect(analyser);
+  // WebKit only pulls audio through nodes that reach the destination; an
+  // unconnected analyser reads silence there. The zero gain keeps it inaudible.
+  const sink = new GainNode(ctx, { gain: 0 });
+  source
+    .connect(highpass)
+    .connect(lowpass)
+    .connect(analyser)
+    .connect(sink)
+    .connect(ctx.destination);
 
   let stopped = false;
   return {
@@ -64,6 +86,8 @@ export async function startMic(ctx: AudioContext, opts: MicOptions): Promise<Mic
       source.disconnect();
       highpass.disconnect();
       lowpass.disconnect();
+      analyser.disconnect();
+      sink.disconnect();
     },
   };
 }

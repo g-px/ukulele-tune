@@ -227,7 +227,7 @@ export interface TunerConfig {
   a4: number; tuning: Tuning; mode: TunerMode;
   inTuneCents: number;          // 5 or 3
   clarityThreshold: number;     // 0.9
-  gateDbfs: number;             // -45
+  gateDbfs: number;             // -55
   medianSize: number;           // 5
   emaAlpha: number;             // 0.3
   inTuneHoldFrames: number;     // 3
@@ -312,7 +312,7 @@ While a tone plays, `main.ts` pauses pitch processing (reading set to "silent").
 | MIN_FREQ / MAX_FREQ | 100 / 1000 |
 | HIGHPASS_HZ / LOWPASS_HZ | 80 / 3000 |
 | CLARITY_THRESHOLD | 0.9 |
-| GATE_DBFS | −45 |
+| GATE_DBFS | −55 |
 | MEDIAN_SIZE | 5 |
 | EMA_ALPHA | 0.3 |
 | IN_TUNE_CENTS (normal/precise) | 5 / 3 |

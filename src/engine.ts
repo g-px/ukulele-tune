@@ -4,7 +4,7 @@
  */
 import { audioContextSupported, ensureAudioContext } from "./audio/context";
 import { classifyMicError, micEnvironmentError } from "./audio/mic-errors";
-import { startMic, type MicSession } from "./audio/mic";
+import { createMicSession, requestMicStream, type MicSession } from "./audio/mic";
 import { createTonePlayer, type TonePlayer } from "./audio/tone";
 import {
   ATTACK_JUMP_DB,
@@ -117,10 +117,13 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       return;
     }
     store.set({ micState: "starting" });
+    let stream: MediaStream | null = null;
     try {
-      ctx = await ensureAudioContext();
       stopMicSession();
-      mic = await startMic(ctx, {
+      stream = await requestMicStream();
+      ctx = await ensureAudioContext();
+      watchContext(ctx);
+      mic = createMicSession(ctx, stream, {
         bufferSize: store.get().settings.bufferSize,
         highpassHz: HIGHPASS_HZ,
         lowpassHz: LOWPASS_HZ,
@@ -139,9 +142,22 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       startLoop();
     } catch (e) {
       console.warn("[ukulele-tune] microphone failed", e);
+      if (!mic) for (const t of stream?.getTracks() ?? []) t.stop();
       stopMicSession();
       store.set({ micState: "error", micError: classifyMicError(e), screen: "mic-error" });
     }
+  }
+
+  const watched = new WeakSet<AudioContext>();
+  /** iOS suspends ("interrupted") the context on calls, Siri or route changes; resume it. */
+  function watchContext(c: AudioContext): void {
+    if (watched.has(c)) return;
+    watched.add(c);
+    c.addEventListener("statechange", () => {
+      if (c.state !== "running" && c.state !== "closed" && mic && !document.hidden) {
+        c.resume().catch(() => undefined);
+      }
+    });
   }
 
   function stopTone(): void {

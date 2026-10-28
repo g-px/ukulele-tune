@@ -117,6 +117,12 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   architecture summary linking `design.md` and `ui-spec.md`; record any
   deviations in `decisions.md`.
 
+## Fixes after release
+
+- [x] **T26 Mic hears nothing.** Connect the analyser through a zero-gain
+  node to the destination, request the stream before the AudioContext,
+  resume an interrupted context, default gate −55 dBFS (decision 13).
+
 ## Backlog (not scheduled)
 Intonation check, relative-tuning helper, custom tunings UI, N-string
 instruments, pt-BR i18n and solfège, AudioWorklet path, strobe display,
