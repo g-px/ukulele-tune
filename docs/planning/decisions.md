@@ -29,6 +29,9 @@ Recorded as they are made. Each entry: decision, date, reason.
 
 | 10 | **Accessibility gate is axe-core in Playwright** (`@axe-core/playwright`, WCAG 2.0–2.2 A/AA tags) on every screen in dark and light themes, instead of Lighthouse. | 2026-10-28 | Runs in CI with the other e2e tests. It led to darkening the light-theme accent to #8A5D00 and using the visible text as the string buttons' accessible name. |
 
+| 11 | **Implementation deviations from design.md**: Vite 8, Vitest 5, TypeScript 5.9 (TypeScript 7 is outside typescript-eslint's supported range); view logic lives in pure `src/state/derive.ts`; `nearestString` prefers an exact octave match when no string is within 100 cents (prevents reading a high-G string on a low-G tuning as "A, 200 cents flat"); tuner adds a 60 ms attack skip; octave-warning state uses a compact layout to fit 390×844. | 2026-10-28 | All covered by tests. |
+| 12 | **License MIT; hosting GitHub Pages via Actions** (also serves `standalone.html`). | 2026-10-28 | Pages must be enabled once in repository settings. |
+
 ## Defaults in force until overridden
 (see `open-questions.md` for the full list)
 
@@ -36,4 +39,3 @@ Recorded as they are made. Each entry: decision, date, reason.
 - Audio path: `AnalyserNode` polled per animation frame; structured so an `AudioWorklet` can replace it.
 - Hosting: GitHub Pages via GitHub Actions; CI runs lint, typecheck, unit tests and a Playwright smoke test on PRs.
 - Milestones: M1 math + detector with tests, M2 mic + needle UI, M3 presets/settings/help, M4 PWA + deploy.
-- License: MIT (confirm).

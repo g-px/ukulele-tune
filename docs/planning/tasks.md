@@ -113,7 +113,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 - [x] **T24 GitHub Pages deploy.** `.github/workflows/deploy.yml` on push to
   `main` with `actions/deploy-pages`; URL in README. Needs Pages source set
   to "GitHub Actions" in repo settings (owner action).
-- [ ] **T25 README and docs refresh.** Usage, local run, build targets,
+- [x] **T25 README and docs refresh.** Usage, local run, build targets,
   architecture summary linking `design.md` and `ui-spec.md`; record any
   deviations in `decisions.md`.
 

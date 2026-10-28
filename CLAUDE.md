@@ -30,3 +30,6 @@ Read first: `docs/planning/design.md` (what to build, signatures, tests) and
 
 ## Commands
 `npm run dev` · `npm run check` · `npm run build` · `npm run build:standalone` · `npm run e2e`
+
+All tasks in `tasks.md` are done (v1). New work: add a task to `tasks.md`
+first, then follow the same rules.
