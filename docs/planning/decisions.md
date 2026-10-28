@@ -21,6 +21,8 @@ Recorded as they are made. Each entry: decision, date, reason.
   - Service workers, and therefore PWA install/offline, do not work on `file://`. Offline for the standalone file is trivial anyway: it is one file.
   - The AnalyserNode audio path needs no extra module file, which is another reason it was chosen over `AudioWorklet` for v1 (worklet modules must be fetched over HTTP).
 
+| 7 | **Implementation is handed to a cheaper model.** Planning (this doc set) was done with a larger model; `design.md`, `tasks.md` and `CLAUDE.md` are written so a smaller model can implement task by task without re-deriving decisions. | 2026-10-28 | Keep tasks small and testable; expected values are spelled out in `design.md`. |
+
 ## Defaults in force until overridden
 (see `open-questions.md` for the full list)
 
