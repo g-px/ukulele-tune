@@ -32,7 +32,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 
 ## Milestone M2: app shell and tuner screen (artboards 1–5)
 
-- [ ] **T09 Settings, store, config, strings.** `src/state/store.ts`,
+- [x] **T09 Settings, store, config, strings.** `src/state/store.ts`,
   `src/state/settings.ts` (design §7, fields exactly as on artboard 6),
   `src/config.ts` (design §6), `src/strings.ts` with all copy from
   `ui-spec.md`. Unit tests for settings validation/persistence with a fake
