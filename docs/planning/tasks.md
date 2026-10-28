@@ -19,7 +19,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   `npm run check`, `prepare` script setting `core.hooksPath`. `check` = lint +
   format:check + typecheck + test (e2e added in T17).
   Done: fresh clone → `npm ci && npm run check && npm run build` passes.
-- [ ] **T02 CI.** `.github/workflows/ci.yml`: Node 20, npm cache, `npm ci`,
+- [x] **T02 CI.** `.github/workflows/ci.yml`: Node 20, npm cache, `npm ci`,
   `npm run check`, `npm run build`, on push to `main` and PRs.
   Done: first push green on GitHub.
 - [ ] **T03 pitch-math.** `src/core/pitch-math.ts` + tests with every value in design §4.1. 100% coverage of the file.
