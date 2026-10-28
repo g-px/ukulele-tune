@@ -110,7 +110,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 - [x] **T23 PWA.** `vite-plugin-pwa`, manifest (name "Ukulele Tune", short
   name "UkeTune", theme colour #141A24, icons 192/512 from the logo), offline
   test: build, preview, load, go offline, reload.
-- [ ] **T24 GitHub Pages deploy.** `.github/workflows/deploy.yml` on push to
+- [x] **T24 GitHub Pages deploy.** `.github/workflows/deploy.yml` on push to
   `main` with `actions/deploy-pages`; URL in README. Needs Pages source set
   to "GitHub Actions" in repo settings (owner action).
 - [ ] **T25 README and docs refresh.** Usage, local run, build targets,
