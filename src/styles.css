@@ -42,7 +42,7 @@
     --text: #141a24;
     --text-2: #2e3a4b;
     --muted: #5b6778;
-    --accent: #9a6a00;
+    --accent: #8a5d00;
     --accent-bg: #fff3d6;
     --on-accent: #ffffff;
     --ok: #15803d;
@@ -61,7 +61,7 @@
   --text: #141a24;
   --text-2: #2e3a4b;
   --muted: #5b6778;
-  --accent: #9a6a00;
+  --accent: #8a5d00;
   --accent-bg: #fff3d6;
   --on-accent: #ffffff;
   --ok: #15803d;
@@ -535,7 +535,6 @@ button {
 .string-btn.is-current .sub,
 .string-btn[aria-pressed="true"] .sub {
   color: inherit;
-  opacity: 0.85;
 }
 .string-btn.is-warn {
   border-color: var(--warn);

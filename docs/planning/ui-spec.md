@@ -18,7 +18,7 @@ properties and in `src/ui/needle.ts` as constants.
 | `--text` | #F3F5F8 | #141A24 |
 | `--text-2` | #D5DBE5 | #2E3A4B |
 | `--muted` | #9AA6B8 | #5B6778 |
-| `--accent` | #F5B942 | #9A6A00 |
+| `--accent` | #F5B942 | #8A5D00 |
 | `--accent-bg` | #2A2512 | #FFF3D6 |
 | `--ok` | #4ADE80 | #15803D |
 | `--ok-bg` | #173B2C | #DCFCE7 |

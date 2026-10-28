@@ -24,7 +24,6 @@ export const S = {
   a4Badge: (a4: number) => `A4 = ${a4}`,
   playTone: (note: string) => `Play ${note} reference tone`,
   stopTone: (note: string) => `Stop ${note} reference tone`,
-  stringButton: (note: string, hz: number) => `${note} string, ${Math.round(hz)} Hz`,
 
   status: {
     starting: "Starting microphone…",

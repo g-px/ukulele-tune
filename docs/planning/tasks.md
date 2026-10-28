@@ -95,7 +95,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   analyser; gate updates config), **Reset to defaults**.
 - [x] **T20 Help screen (artboard 7).** `src/ui/help-screen.ts` from
   `strings.ts`: the four cards and the privacy footer; scrolls.
-- [ ] **T21 Accessibility and UX pass.** `aria-live` region ("G4, 12 cents
+- [x] **T21 Accessibility and UX pass.** `aria-live` region ("G4, 12 cents
   flat, tighten", throttled 1/s, on change only), `aria-pressed` on
   segmented and string buttons, focus order, 44px targets,
   `prefers-reduced-motion`, haptic `navigator.vibrate(30)` on entering

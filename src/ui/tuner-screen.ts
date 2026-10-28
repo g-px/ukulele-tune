@@ -107,6 +107,7 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
             "aria-label": "Microphone level",
             "aria-valuemin": 0,
             "aria-valuemax": 100,
+            "aria-valuenow": 0,
           },
           levelFill,
         ),

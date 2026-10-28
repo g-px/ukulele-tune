@@ -60,7 +60,6 @@ export function createStringsPanel(actions: Actions) {
       if (!c) return;
       setText(c.letter, v.letter);
       setText(c.sub, v.sub);
-      setAttr(c.btn, "aria-label", S.stringButton(v.noteLabel, v.hz));
       setAttr(c.btn, "aria-pressed", String(v.locked));
       setClass(c.btn, "is-current", v.current);
       setClass(c.btn, "is-warn", v.warn);

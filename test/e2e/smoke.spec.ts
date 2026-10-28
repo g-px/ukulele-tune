@@ -74,7 +74,7 @@ test("microphone: E locked and 23 cents flat says tighten", async ({ baseURL }) 
     TONES.e4flat.file,
     async (page) => {
       await page.getByRole("button", { name: "Start tuner" }).click();
-      await page.getByRole("button", { name: /^E4 string/ }).click();
+      await page.getByRole("button", { name: /^E ?4 ·/ }).click();
       await expect(page.locator(".lock-note")).toHaveText("Locked: E · tap Auto to unlock");
       await expect(page.locator(".pill")).toHaveText("Tighten", { timeout: 5000 });
       await expect(page.locator(".note-cents")).toHaveText(/^−2[2-4] ¢$/);
