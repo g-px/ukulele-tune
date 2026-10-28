@@ -103,7 +103,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 
 ## Milestone M4: builds, PWA, deploy
 
-- [ ] **T22 Standalone build.** `vite.standalone.config.ts` +
+- [x] **T22 Standalone build.** `vite.standalone.config.ts` +
   `vite-plugin-singlefile` → `dist/standalone.html`; fonts inlined;
   service worker registration guarded against `file://`; CI uploads the
   file as an artifact. Verify it opens from disk in Chrome and prompts for the mic.

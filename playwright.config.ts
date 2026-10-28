@@ -16,7 +16,7 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { browserName: "chromium" } }],
   webServer: {
-    command: `npx vite build && npx vite preview --port ${PORT} --strictPort`,
+    command: `npx vite build && npx vite build --config vite.standalone.config.ts && npx vite preview --port ${PORT} --strictPort`,
     port: PORT,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
