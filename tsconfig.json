@@ -15,5 +15,5 @@
     "noEmit": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "test", "*.ts"]
+  "include": ["src", "test/core", "test/state", "test/audio", "test/helpers"]
 }

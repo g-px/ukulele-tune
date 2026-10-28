@@ -80,7 +80,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 - [x] **T17 Microphone blocked screen (artboard 5).** `src/ui/mic-error.ts`
   with the five `MicError` variants, **Try again** (re-request) and **Tune
   by ear** actions, ringer footnote.
-- [ ] **T18 Playwright smoke test.** `playwright.config.ts`,
+- [x] **T18 Playwright smoke test.** `playwright.config.ts`,
   `test/e2e/smoke.spec.ts` with fake media flags: load, click **Start
   tuner**, expect "Listening…" and buttons G C E A; open Settings and Help
   and return. Add `e2e` to `check` and CI (`npx playwright install
