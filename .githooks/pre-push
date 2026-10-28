@@ -1,0 +1,3 @@
+#!/bin/sh
+# Trunk-based workflow: never push unless every check passes.
+npm run check

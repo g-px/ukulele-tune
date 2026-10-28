@@ -12,7 +12,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 
 ## Milestone M1: scaffold, math, detector (no UI)
 
-- [ ] **T01 Scaffold.** Vite + TypeScript (design §2, §3): `package.json`
+- [x] **T01 Scaffold.** Vite + TypeScript (design §2, §3): `package.json`
   scripts, strict `tsconfig.json`, `vite.config.ts` (base `./`), placeholder
   `index.html`/`src/main.ts`/`src/styles.css`, ESLint flat config + Prettier,
   Vitest with one trivial test, `.gitignore`, `.githooks/pre-push` running
