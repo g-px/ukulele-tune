@@ -1,5 +1,6 @@
 import "./styles.css";
 import { createEngine } from "./engine";
+import { registerServiceWorker } from "./pwa";
 import { initialState } from "./state/app-state";
 import { browserStorage, loadSettings } from "./state/settings";
 import { createStore } from "./state/store";
@@ -12,3 +13,5 @@ if (root) {
   const actions = createEngine(store, storage);
   mountApp(root, store, actions);
 }
+
+registerServiceWorker();

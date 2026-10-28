@@ -107,7 +107,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   `vite-plugin-singlefile` → `dist/standalone.html`; fonts inlined;
   service worker registration guarded against `file://`; CI uploads the
   file as an artifact. Verify it opens from disk in Chrome and prompts for the mic.
-- [ ] **T23 PWA.** `vite-plugin-pwa`, manifest (name "Ukulele Tune", short
+- [x] **T23 PWA.** `vite-plugin-pwa`, manifest (name "Ukulele Tune", short
   name "UkeTune", theme colour #141A24, icons 192/512 from the logo), offline
   test: build, preview, load, go offline, reload.
 - [ ] **T24 GitHub Pages deploy.** `.github/workflows/deploy.yml` on push to
