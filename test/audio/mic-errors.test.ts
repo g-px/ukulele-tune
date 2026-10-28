@@ -13,6 +13,7 @@ describe("classifyMicError", () => {
     ["AbortError", "in-use"],
     ["InsecureContextError", "insecure-context"],
     ["TypeError", "unsupported"],
+    ["NotSupportedError", "unsupported"],
     ["SomethingElse", "unknown"],
   ])("%s -> %s", (name, expected) => {
     expect(classifyMicError(err(name))).toBe(expected);

@@ -41,33 +41,33 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   analyser, `classifyMicError` with the five variants used by screen 5) and
   `src/audio/tone.ts` (triangle oscillator, 10 ms attack / 30 ms release).
   Unit-test `classifyMicError`; log `getSettings()` on start.
-- [ ] **T11 Theme and app shell.** `src/styles.css` with the token table
+- [x] **T11 Theme and app shell.** `src/styles.css` with the token table
   from `ui-spec.md` (dark + light via `prefers-color-scheme` and
   `data-theme`), Inter woff2 in `public/fonts` with `@font-face`,
   `src/ui/dom.ts` (`h`, `on`, `qs`), `src/ui/app.ts` with screen switching
   (`tuner | settings | help`, hidden attribute, no router) and the shared
   header (logo, title, Help/Settings icon buttons as on artboard 2).
   Done: empty screens render in both themes at 360 and 390 px wide with no horizontal scroll.
-- [ ] **T12 Start overlay (artboard 1).** `src/ui/start-overlay.ts`: logo,
+- [x] **T12 Start overlay (artboard 1).** `src/ui/start-overlay.ts`: logo,
   title, instruction, **Start tuner** (creates/resumes AudioContext in the
   click handler, requests the mic, hides the overlay on success), **Tune by
   ear with reference tones** (hides overlay, mic stays off, status says
   "Microphone off · tones only"), privacy card.
-- [ ] **T13 Needle (artboard 2–4 geometry).** `src/ui/needle.ts` builds the
+- [x] **T13 Needle (artboard 2–4 geometry).** `src/ui/needle.ts` builds the
   SVG per `ui-spec.md` "Needle geometry"; `update({cents, inTune, state})`
   rotates the needle, swaps colours, re-draws the green wedge when the
   window changes; reduced-motion respected. Unit-test the angle and wedge
   path functions (pure, in `src/core/needle-geometry.ts`).
-- [ ] **T14 Note display and status pill.** `src/ui/note-display.ts`:
+- [x] **T14 Note display and status pill.** `src/ui/note-display.ts`:
   note label, signed cents with tabular numerals, pill with the three
   variants **In tune / Tighten ↑ / Loosen ↓** and the stale (greyed) look.
-- [ ] **T15 Strings panel (artboards 2–4).** `src/ui/strings-panel.ts`:
+- [x] **T15 Strings panel (artboards 2–4).** `src/ui/strings-panel.ts`:
   4-column grid in 4→1 order, mirrored when left-handed; each column a
   string button (letter, "octave · Hz") and a tone button. States: idle,
   current (accent), locked (accent + lock icon), octave-warning (warn).
   Tapping a string sets manual mode; tapping again or **Auto** clears it.
   Tone button toggles the reference tone and pauses detection while playing.
-- [ ] **T16 Tuner screen assembly + main loop (artboards 2, 3, 4).**
+- [x] **T16 Tuner screen assembly + main loop (artboards 2, 3, 4).**
   `src/ui/tuner-screen.ts` composes header, tuning select (nine presets),
   A4 badge (only when ≠ 440, links to Settings), note display, needle,
   strings panel, mode row (Auto | Chromatic | "Locked: X" text), octave
@@ -77,7 +77,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   context. Done: with a sine from another device the screen shows the
   states of artboards 2, 3 and 4 exactly (verify manually; list what was
   checked in the commit message).
-- [ ] **T17 Microphone blocked screen (artboard 5).** `src/ui/mic-error.ts`
+- [x] **T17 Microphone blocked screen (artboard 5).** `src/ui/mic-error.ts`
   with the five `MicError` variants, **Try again** (re-request) and **Tune
   by ear** actions, ringer footnote.
 - [ ] **T18 Playwright smoke test.** `playwright.config.ts`,
@@ -88,12 +88,12 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 
 ## Milestone M3: settings, help, polish (artboards 6–7)
 
-- [ ] **T19 Settings screen (artboard 6).** `src/ui/settings-screen.ts`:
+- [x] **T19 Settings screen (artboard 6).** `src/ui/settings-screen.ts`:
   every row as drawn, immediate effect (A4 updates targets, Hz labels and
   the badge; tuning resets the tuner; left-handed mirrors; theme applies;
   window redraws the wedge; analysis window recreates the detector and
   analyser; gate updates config), **Reset to defaults**.
-- [ ] **T20 Help screen (artboard 7).** `src/ui/help-screen.ts` from
+- [x] **T20 Help screen (artboard 7).** `src/ui/help-screen.ts` from
   `strings.ts`: the four cards and the privacy footer; scrolls.
 - [ ] **T21 Accessibility and UX pass.** `aria-live` region ("G4, 12 cents
   flat, tighten", throttled 1/s, on change only), `aria-pressed` on

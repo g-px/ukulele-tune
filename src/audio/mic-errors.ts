@@ -21,6 +21,7 @@ export function classifyMicError(e: unknown): MicError {
     case "InsecureContextError":
       return "insecure-context";
     case "UnsupportedError":
+    case "NotSupportedError":
     case "TypeError":
       return "unsupported";
     default:
