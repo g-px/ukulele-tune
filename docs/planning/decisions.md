@@ -23,6 +23,8 @@ Recorded as they are made. Each entry: decision, date, reason.
 
 | 7 | **Implementation is handed to a cheaper model.** Planning (this doc set) was done with a larger model; `design.md`, `tasks.md` and `CLAUDE.md` are written so a smaller model can implement task by task without re-deriving decisions. | 2026-10-28 | Keep tasks small and testable; expected values are spelled out in `design.md`. |
 
+| 8 | **Visual design fixed on a design canvas** (seven phone artboards, dark theme, amber accent, Inter). `ui-spec.md` is the written form; the task plan maps each UI task to an artboard. | 2026-10-28 | Light theme tokens derived in `ui-spec.md`, not drawn. |
+
 ## Defaults in force until overridden
 (see `open-questions.md` for the full list)
 

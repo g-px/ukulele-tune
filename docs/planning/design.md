@@ -338,6 +338,10 @@ App state: `{ screen: "tuner"|"settings"|"help", micState: "idle"|"starting"|"ru
 
 ## 8. UI
 
+The visual design is on the design canvas
+(https://claude.ai/artifact/313FtAS9NZPtWQ6VagKK7g) and specified in
+`ui-spec.md`, which takes precedence over the sketch below.
+
 Single column, max width 480 px, centered. Screens switch by toggling
 `hidden`; no router, no URL state.
 

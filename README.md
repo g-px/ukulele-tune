@@ -25,6 +25,7 @@ Knowledge base (`docs/knowledge/`):
 Planning (`docs/planning/`):
 
 - [design.md](docs/planning/design.md): technical design: stack, layout, module signatures, algorithms, tests, UI, builds.
+- [ui-spec.md](docs/planning/ui-spec.md): screens, tokens, needle geometry and copy, taken from the [design canvas](https://claude.ai/artifact/313FtAS9NZPtWQ6VagKK7g).
 - [tasks.md](docs/planning/tasks.md): ordered implementation tasks (M1 to M4) with done criteria.
 - [decisions.md](docs/planning/decisions.md): decisions made so far and the defaults in force.
 - [open-questions.md](docs/planning/open-questions.md): remaining decisions, each with the default that will be used if unanswered.
