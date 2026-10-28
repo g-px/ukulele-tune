@@ -37,7 +37,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   `src/config.ts` (design §6), `src/strings.ts` with all copy from
   `ui-spec.md`. Unit tests for settings validation/persistence with a fake
   `localStorage`.
-- [ ] **T10 Audio layer.** `src/audio/mic.ts` (constraints, filter graph,
+- [x] **T10 Audio layer.** `src/audio/mic.ts` (constraints, filter graph,
   analyser, `classifyMicError` with the five variants used by screen 5) and
   `src/audio/tone.ts` (triangle oscillator, 10 ms attack / 30 ms release).
   Unit-test `classifyMicError`; log `getSettings()` on start.
