@@ -25,6 +25,8 @@ Recorded as they are made. Each entry: decision, date, reason.
 
 | 8 | **Visual design fixed on a design canvas** (seven phone artboards, dark theme, amber accent, Inter). `ui-spec.md` is the written form; the task plan maps each UI task to an artboard. | 2026-10-28 | Light theme tokens derived in `ui-spec.md`, not drawn. |
 
+| 9 | **MPM autocorrelation computed with an in-repo radix-2 FFT** (`src/core/fft.ts`), not the direct O(n·lag) sum. | 2026-10-28 | Direct sum measured 7.6 ms per 2048-sample frame under coverage; FFT version 0.22 ms uninstrumented, same accuracy. |
+
 ## Defaults in force until overridden
 (see `open-questions.md` for the full list)
 

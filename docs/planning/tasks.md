@@ -25,7 +25,7 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 - [x] **T03 pitch-math.** `src/core/pitch-math.ts` + tests with every value in design §4.1. 100% coverage of the file.
 - [x] **T04 tunings.** `src/core/tunings.ts` with the nine presets from `docs/knowledge/02-tunings.md`; tests per design §4.2 plus a table test of every string's Hz at A4 = 440.
 - [x] **T05 signal helpers and generators.** `src/core/signal.ts` (rms, dbfs) and `test/helpers/signal.ts` (sine, pluck, seeded whiteNoise, mix, addNoiseSnr) with tests (design §4.4, T05 in the old plan).
-- [ ] **T06 MPM detector.** `src/core/mpm.ts` per design §4.3 with every listed test, including no-octave-error cases and the performance soft check.
+- [x] **T06 MPM detector.** `src/core/mpm.ts` per design §4.3 with every listed test, including no-octave-error cases and the performance soft check.
 - [ ] **T07 smoothing + string-select.** `src/core/smoothing.ts`, `src/core/string-select.ts` and tests (design §4.5, §4.6). `nearestString` must also return the *partner preset id* for octave hints (high G ↔ low G, D ↔ Canadian, baritone ↔ vintage G) so screen 4's button can switch tunings.
 - [ ] **T08 tuner state machine.** `src/core/tuner.ts` + tests (design §4.7) including stale/hold behaviour and the `direction`/`inTune` rules the pills depend on.
   Done: M1 complete, `src/core` coverage ≥ 95%.
