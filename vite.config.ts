@@ -1,9 +1,10 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { buildId } from "./build-id.ts";
 
 export default defineConfig({
   base: "./",
-  define: { __PWA__: "true" },
+  define: { __PWA__: "true", __BUILD__: JSON.stringify(buildId()) },
   build: { target: "es2020" },
   plugins: [
     VitePWA({

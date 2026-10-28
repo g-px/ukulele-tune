@@ -3,7 +3,12 @@ import { join } from "node:path";
 import { FIXTURE_DIR, TONES } from "./wav";
 
 /** Launch Chromium with a WAV file as the microphone. */
-async function withMic(file: string, fn: (page: Page) => Promise<void>, baseURL: string) {
+async function withMic(
+  file: string,
+  fn: (page: Page) => Promise<void>,
+  baseURL: string,
+  query = "",
+) {
   const browser: Browser = await chromium.launch({
     args: [
       "--use-fake-ui-for-media-stream",
@@ -13,7 +18,7 @@ async function withMic(file: string, fn: (page: Page) => Promise<void>, baseURL:
   });
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-    await page.goto(baseURL);
+    await page.goto(baseURL + query);
     await fn(page);
   } finally {
     await browser.close();
@@ -96,5 +101,33 @@ test("microphone: low G on a high-G tuning warns and can switch", async ({ baseU
       await expect(page.locator(".pill")).toHaveText("In tune");
     },
     baseURL ?? "",
+  );
+});
+
+test("?debug shows the audio path state", async ({ baseURL }) => {
+  await withMic(
+    TONES.g4.file,
+    async (page) => {
+      await page.getByRole("button", { name: "Start tuner" }).click();
+      const debug = page.locator(".debug");
+      await expect(debug).toContainText("profile raw", { timeout: 5000 });
+      await expect(debug).toContainText("ctx running");
+      await expect(debug).toContainText("track live");
+    },
+    baseURL ?? "",
+    "?debug",
+  );
+});
+
+test("a mic that sends only zeros falls back, then says so", async ({ baseURL }) => {
+  await withMic(
+    TONES.silence.file,
+    async (page) => {
+      await page.getByRole("button", { name: "Start tuner" }).click();
+      await expect(page.locator(".debug")).toContainText("profile plain", { timeout: 6000 });
+      await expect(page.locator(".status")).toContainText("sending silence", { timeout: 6000 });
+    },
+    baseURL ?? "",
+    "?debug",
   );
 });

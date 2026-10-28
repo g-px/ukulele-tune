@@ -122,6 +122,9 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
 - [x] **T26 Mic hears nothing.** Connect the analyser through a zero-gain
   node to the destination, request the stream before the AudioContext,
   resume an interrupted context, default gate −55 dBFS (decision 13).
+- [x] **T27 Dead-mic fallback.** Retry capture with plain constraints when
+  the input is exact silence, match context and mic sample rates, iOS audio
+  session, `?debug` readout, build id in Help (decision 14).
 
 ## Backlog (not scheduled)
 Intonation check, relative-tuning helper, custom tunings UI, N-string

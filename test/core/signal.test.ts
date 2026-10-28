@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dbfs, rms } from "../../src/core/signal";
+import { dbfs, peak, rms } from "../../src/core/signal";
 import { addNoiseSnr, mix, pluck, sine, whiteNoise } from "../helpers/signal";
 
 describe("rms / dbfs", () => {
@@ -14,6 +14,16 @@ describe("rms / dbfs", () => {
     expect(dbfs(1)).toBe(0);
     expect(dbfs(0.1)).toBeCloseTo(-20, 10);
     expect(dbfs(0)).toBe(-Infinity);
+  });
+});
+
+describe("peak", () => {
+  it("is the largest absolute sample", () => {
+    expect(peak(new Float32Array([0.1, -0.7, 0.3]))).toBeCloseTo(0.7, 6);
+  });
+  it("is exactly 0 for digital silence and empty buffers", () => {
+    expect(peak(new Float32Array(64))).toBe(0);
+    expect(peak(new Float32Array(0))).toBe(0);
   });
 });
 

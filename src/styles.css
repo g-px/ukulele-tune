@@ -630,6 +630,17 @@ button {
   color: var(--muted);
   min-height: 38px;
 }
+.debug {
+  margin: 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 
 /* Mic error */
 .error-card {

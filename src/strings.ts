@@ -36,6 +36,8 @@ export const S = {
     inTune: (s: string) => `${s} is in tune. Pluck the next string.`,
     playingTone: (note: string) => `Playing ${note} reference tone`,
     micOff: "Microphone off · tones only. Tap a ▶ button to hear a string.",
+    micSilent:
+      "The microphone is sending silence. Close other apps using it (calls, recorders), then reload the page.",
   },
 
   octave: {

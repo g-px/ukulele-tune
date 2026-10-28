@@ -69,6 +69,7 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
 
   const levelFill = h("div", { class: "level-fill" });
   const status = h("div", { class: "status" });
+  const debug = h("pre", { class: "debug", hidden: true });
   const live = h("div", { class: "visually-hidden", "aria-live": "polite", role: "status" });
 
   const el = h(
@@ -114,6 +115,7 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
       ),
       status,
     ),
+    debug,
     live,
   );
 
@@ -169,6 +171,8 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
       levelFill.parentElement?.setAttribute("aria-valuenow", String(level));
     }
     setText(status, statusMessage(st));
+    setHidden(debug, st.debugInfo === "");
+    setText(debug, st.debugInfo);
 
     const text = announcement(st);
     if (text && text !== lastAnnounce && st.nowMs - lastAnnounceAt >= ANNOUNCE_INTERVAL_MS) {

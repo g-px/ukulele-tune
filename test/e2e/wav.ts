@@ -42,4 +42,6 @@ export const TONES = {
   g4: { file: "g4.wav", freq: 392 * 2 ** (1 / 1200) },
   e4flat: { file: "e4-flat.wav", freq: 329.63 * 2 ** (-23 / 1200) },
   g3: { file: "g3.wav", freq: 196 },
+  /** All-zero samples: a mic path that delivers nothing. */
+  silence: { file: "silence.wav", freq: 0 },
 };

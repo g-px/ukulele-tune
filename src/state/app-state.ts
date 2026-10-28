@@ -12,6 +12,8 @@ export interface AppState {
   returnTo: Screen;
   micState: MicState;
   micError: MicError | null;
+  /** Every capture profile delivered exact zeros (mic path dead, not just quiet). */
+  micSilent: boolean;
   mode: TunerMode;
   reading: TunerReading;
   tonePlaying: StringNumber | null;
@@ -19,6 +21,8 @@ export interface AppState {
   lastNoteMs: number;
   nowMs: number;
   settings: Settings;
+  /** Live audio-path summary, filled only with ?debug in the URL. */
+  debugInfo: string;
 }
 
 export function initialState(settings: Settings): AppState {
@@ -27,12 +31,14 @@ export function initialState(settings: Settings): AppState {
     returnTo: "tuner",
     micState: "idle",
     micError: null,
+    micSilent: false,
     mode: { kind: "auto" },
     reading: EMPTY_READING,
     tonePlaying: null,
     lastNoteMs: 0,
     nowMs: 0,
     settings,
+    debugInfo: "",
   };
 }
 

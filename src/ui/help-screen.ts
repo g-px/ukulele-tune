@@ -24,7 +24,7 @@ export function helpScreen(actions: Actions): HTMLElement {
       "div",
       { class: "help-footer" },
       icons.shield(),
-      h("span", {}, S.helpScreen.privacy(version)),
+      h("span", {}, S.helpScreen.privacy(`${version} (${__BUILD__})`)),
     ),
   );
 }

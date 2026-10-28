@@ -2,9 +2,15 @@
  * Connects audio to state: owns the AudioContext, mic session, detector,
  * tuner and tone player, runs the per-frame loop and implements Actions.
  */
-import { audioContextSupported, ensureAudioContext } from "./audio/context";
+import { audioContextSupported, closeAudioContext, ensureAudioContext } from "./audio/context";
 import { classifyMicError, micEnvironmentError } from "./audio/mic-errors";
-import { createMicSession, requestMicStream, type MicSession } from "./audio/mic";
+import {
+  createMicSession,
+  requestMicStream,
+  streamSampleRate,
+  type CaptureProfile,
+  type MicSession,
+} from "./audio/mic";
 import { createTonePlayer, type TonePlayer } from "./audio/tone";
 import {
   ATTACK_JUMP_DB,
@@ -21,7 +27,7 @@ import {
 } from "./config";
 import { createPitchDetector, type PitchDetector } from "./core/mpm";
 import { midiToFreq } from "./core/pitch-math";
-import { dbfs, rms } from "./core/signal";
+import { dbfs, peak, rms } from "./core/signal";
 import { EMPTY_READING, createTuner, type TunerConfig, type TunerMode } from "./core/tuner";
 import { getTuning, type StringNumber } from "./core/tunings";
 import type { Actions, AppState, Screen } from "./state/app-state";
@@ -33,6 +39,12 @@ import {
   type Settings,
 } from "./state/settings";
 import type { Store } from "./state/store";
+
+/** Tried in order while the mic delivers only exact zeros (seen on iOS Safari). */
+const CAPTURE_PROFILES: readonly CaptureProfile[] = ["raw", "plain"];
+/** About 1.5 s of frames of exact digital silence before trying the next profile. */
+const DEAD_FRAMES = 90;
+const DEBUG = typeof location !== "undefined" && new URLSearchParams(location.search).has("debug");
 
 function tunerConfig(settings: Settings, mode: TunerMode): TunerConfig {
   return {
@@ -58,7 +70,11 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
   let detector: PitchDetector | null = null;
   let buffer = new Float32Array(0);
   let tone: TonePlayer | null = null;
+  let toneCtx: AudioContext | null = null;
   let raf = 0;
+  let attempt = 0;
+  let deadFrames = 0;
+  let frameCount = 0;
   let resumeOnVisible = false;
   const tuner = createTuner(tunerConfig(store.get().settings, store.get().mode));
 
@@ -84,7 +100,9 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       return;
     }
     mic.read(buffer);
+    frameCount++;
     const level = dbfs(rms(buffer));
+    if (watchForDeadInput(peak(buffer))) return;
     const pitch =
       level >= st.settings.gateDbfs ? detector.detect(buffer) : { frequency: 0, clarity: 0 };
     const reading = tuner.process({ ...pitch, rmsDbfs: level, timeMs: now });
@@ -93,7 +111,42 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       reading,
       nowMs: now,
       lastNoteMs: reading.status === "note" ? now : st.lastNoteMs,
+      ...(DEBUG && frameCount % 15 === 0 ? { debugInfo: debugLine(level) } : {}),
     });
+  }
+
+  /** Returns true when it has started a restart and the frame should end. */
+  function watchForDeadInput(samplePeak: number): boolean {
+    if (samplePeak > 0) {
+      deadFrames = 0;
+      return false;
+    }
+    deadFrames++;
+    if (deadFrames === DEAD_FRAMES / 2 && ctx && ctx.state !== "running") {
+      ctx.resume().catch(() => undefined);
+    }
+    if (deadFrames < DEAD_FRAMES) return false;
+    deadFrames = 0;
+    if (attempt + 1 < CAPTURE_PROFILES.length) {
+      console.warn(
+        "[ukulele-tune] mic delivers silence; retrying with",
+        CAPTURE_PROFILES[attempt + 1],
+      );
+      void beginMic(attempt + 1);
+      return true;
+    }
+    if (!store.get().micSilent) store.set({ micSilent: true });
+    return false;
+  }
+
+  function debugLine(level: number): string {
+    const lvl = Number.isFinite(level) ? `${level.toFixed(1)} dBFS` : "silence";
+    return [
+      `build ${__BUILD__} · profile ${CAPTURE_PROFILES[attempt] ?? "?"}`,
+      mic?.describe() ?? "no mic",
+      `level ${lvl} · frames ${frameCount}`,
+      navigator.userAgent,
+    ].join("\n");
   }
 
   function startLoop(): void {
@@ -106,7 +159,7 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
     detector = null;
   }
 
-  async function beginMic(): Promise<void> {
+  async function beginMic(profileIndex = 0): Promise<void> {
     const envError = micEnvironmentError({
       isSecureContext: window.isSecureContext,
       hasGetUserMedia: Boolean(navigator.mediaDevices?.getUserMedia),
@@ -116,12 +169,15 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       store.set({ micState: "error", micError: envError, screen: "mic-error" });
       return;
     }
-    store.set({ micState: "starting" });
+    store.set({ micState: "starting", micSilent: false });
     let stream: MediaStream | null = null;
     try {
       stopMicSession();
-      stream = await requestMicStream();
-      ctx = await ensureAudioContext();
+      attempt = profileIndex;
+      deadFrames = 0;
+      if (profileIndex > 0) closeAudioContext();
+      stream = await requestMicStream(CAPTURE_PROFILES[profileIndex] ?? "plain");
+      ctx = await ensureAudioContext(streamSampleRate(stream));
       watchContext(ctx);
       mic = createMicSession(ctx, stream, {
         bufferSize: store.get().settings.bufferSize,
@@ -172,7 +228,11 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       console.warn("[ukulele-tune] audio output unavailable", e);
       return;
     }
-    tone ??= createTonePlayer(ctx);
+    if (!tone || toneCtx !== ctx) {
+      tone?.stop();
+      tone = createTonePlayer(ctx);
+      toneCtx = ctx;
+    }
     const { settings } = store.get();
     const str = getTuning(settings.tuningId).strings.find((x) => x.number === n);
     if (!str) return;
@@ -224,7 +284,7 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
         resumeOnVisible = false;
         // Permission is already granted, so this normally succeeds without a prompt.
         // If the browser refuses without a gesture, the error screen offers "Try again".
-        void beginMic();
+        void beginMic(attempt);
       }
     }
   });

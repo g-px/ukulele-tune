@@ -11,30 +11,54 @@ export interface MicSession {
   /** Copy the latest `bufferSize` time-domain samples into target. */
   read(target: Float32Array<ArrayBuffer>): void;
   setBufferSize(size: number): void;
+  /** One-line state summary for the ?debug readout. */
+  describe(): string;
   stop(): void;
 }
 
+/** How hard to ask for an unprocessed signal. Later entries are fallbacks. */
+export type CaptureProfile = "raw" | "plain";
+
+interface AudioSessionLike {
+  type: string;
+}
+
 /**
- * Request the mic with all voice processing off. Called before the
- * AudioContext exists: iOS Safari can deliver silence to a context created
- * before capture started, and an active capture lets the context start
- * without a fresh user gesture.
+ * iOS 16.4+: make the page's audio session record as well as play, so mic
+ * input reaches Web Audio even when the page has played sound before.
  */
-export async function requestMicStream(): Promise<MediaStream> {
+function preferPlayAndRecord(): void {
+  const session = (navigator as Navigator & { audioSession?: AudioSessionLike }).audioSession;
+  if (session && session.type !== "play-and-record") {
+    try {
+      session.type = "play-and-record";
+    } catch {
+      // Older WebKit exposes the object but rejects the value; nothing else to do.
+    }
+  }
+}
+
+/**
+ * Request the mic. Called before the AudioContext exists: iOS Safari can
+ * deliver silence to a context created before capture started, and an
+ * active capture lets the context start without a fresh user gesture.
+ */
+export async function requestMicStream(profile: CaptureProfile): Promise<MediaStream> {
   const md = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
   if (!md?.getUserMedia) {
     throw Object.assign(new Error("getUserMedia unsupported"), { name: "UnsupportedError" });
   }
-  const stream = await md.getUserMedia({
-    audio: {
-      echoCancellation: false,
-      noiseSuppression: false,
-      autoGainControl: false,
-      channelCount: { ideal: 1 },
-    },
-    video: false,
-  });
-  return stream;
+  preferPlayAndRecord();
+  const audio: MediaTrackConstraints | true =
+    profile === "raw"
+      ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      : true;
+  return md.getUserMedia({ audio, video: false });
+}
+
+/** Sample rate the mic track reports, if any; used to build a matching context. */
+export function streamSampleRate(stream: MediaStream): number | undefined {
+  return stream.getAudioTracks()[0]?.getSettings().sampleRate;
 }
 
 /** Build the analysis graph for an already granted stream. */
@@ -78,6 +102,12 @@ export function createMicSession(
     },
     setBufferSize(size) {
       analyser.fftSize = size;
+    },
+    describe() {
+      const t = track
+        ? `track ${track.readyState}${track.muted ? " muted" : ""}${track.enabled ? "" : " disabled"}`
+        : "no track";
+      return `ctx ${ctx.state} ${ctx.sampleRate} Hz · ${t} · mic ${settings.sampleRate ?? "?"} Hz`;
     },
     stop() {
       if (stopped) return;

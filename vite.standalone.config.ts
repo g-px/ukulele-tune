@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
+import { buildId } from "./build-id.ts";
 
 /** Emit the inlined page as dist/standalone.html next to the normal build. */
 function renameToStandalone(): Plugin {
@@ -15,7 +16,7 @@ function renameToStandalone(): Plugin {
 
 export default defineConfig({
   base: "./",
-  define: { __PWA__: "false" },
+  define: { __PWA__: "false", __BUILD__: JSON.stringify(buildId()) },
   plugins: [viteSingleFile({ removeViteModuleLoader: true }), renameToStandalone()],
   build: {
     target: "es2020",

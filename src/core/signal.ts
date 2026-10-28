@@ -13,3 +13,13 @@ export function rms(buffer: Float32Array): number {
 export function dbfs(rmsValue: number): number {
   return rmsValue > 0 ? 20 * Math.log10(rmsValue) : -Infinity;
 }
+
+/** Largest absolute sample value; exactly 0 means the input is digital silence. */
+export function peak(buffer: Float32Array): number {
+  let max = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    const v = Math.abs(buffer[i] as number);
+    if (v > max) max = v;
+  }
+  return max;
+}

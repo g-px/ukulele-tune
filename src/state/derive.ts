@@ -92,6 +92,7 @@ export function statusMessage(st: AppState): string {
     if (pill === "in") return S.status.inTune(prettyAccidentals(r.noteLabel));
     return pill === "tighten" ? S.status.tighten(letter) : S.status.loosen(letter);
   }
+  if (st.micSilent) return S.status.micSilent;
   return st.nowMs - st.lastNoteMs > NO_SIGNAL_MS ? S.status.noSignal : S.status.listening;
 }
 
