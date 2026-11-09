@@ -1,5 +1,6 @@
 /** Pure view-model functions: AppState -> what each widget shows. */
 import { midiToFreq, noteName, prettyAccidentals } from "../core/pitch-math";
+import { GUIDE_ORDER, currentString } from "../core/guide";
 import { getTuning, type StringNumber } from "../core/tunings";
 import { S, tuningName } from "../strings";
 import type { AppState } from "./app-state";
@@ -112,6 +113,8 @@ export interface StringView {
   current: boolean;
   warn: boolean;
   tone: boolean;
+  /** Guided tuning: already tuned in this round. */
+  done: boolean;
 }
 
 export function stringViews(st: AppState): StringView[] {
@@ -122,16 +125,25 @@ export function stringViews(st: AppState): StringView[] {
     const isTarget = hasReading(st) && st.reading.stringNumber === str.number;
     const locked = st.mode.kind === "manual" && st.mode.stringNumber === str.number;
     const warn = isTarget && st.reading.octaveHint !== "none";
+    const order = GUIDE_ORDER.indexOf(str.number);
+    const guide = st.guide;
+    const done = guide !== null && (guide.done || order < guide.index);
+    const isNext = guide !== null && !guide.done && order === guide.index + 1;
     return {
       number: str.number,
       letter: prettyAccidentals(name.letter),
       noteLabel: prettyAccidentals(name.label),
-      sub: `${name.octave} · ${Math.round(hz)} Hz`,
+      sub: guide
+        ? isNext
+          ? S.guide.next
+          : S.guide.tileString(str.number)
+        : `${name.octave} · ${Math.round(hz)} Hz`,
       hz,
       locked,
       current: isTarget && !warn && !locked,
       warn,
       tone: st.tonePlaying === str.number,
+      done,
     };
   });
   return st.settings.leftHanded ? views.reverse() : views;
@@ -159,5 +171,45 @@ export function octaveView(st: AppState): OctaveView {
     body: low ? S.octave.lowBody(note) : S.octave.highBody(note),
     switchLabel: partner ? S.octave.switchTo(tuningName(partner.id)) : null,
     switchTo: partner ? partner.id : null,
+  };
+}
+
+export interface GuideView {
+  visible: boolean;
+  done: boolean;
+  step: string;
+  round: string;
+  title: string;
+  hint: string;
+  /** Index of the current string in GUIDE_ORDER (pills before it are filled). */
+  index: number;
+}
+
+export function guideView(st: AppState): GuideView {
+  const g = st.guide;
+  const hidden = {
+    visible: false,
+    done: false,
+    step: "",
+    round: "",
+    title: "",
+    hint: "",
+    index: 0,
+  };
+  if (!g) return hidden;
+  const n = currentString(g);
+  const round = S.guide.round(g.round);
+  if (n === null)
+    return { ...hidden, visible: true, done: true, round, title: S.guide.done, index: 4 };
+  const str = getTuning(st.settings.tuningId).strings.find((x) => x.number === n);
+  const letter = str ? prettyAccidentals(noteName(str.midi, st.settings.flats).letter) : "";
+  return {
+    visible: true,
+    done: false,
+    step: S.guide.step(g.index + 1),
+    round,
+    title: S.guide.string(n, letter),
+    hint: n === 4 ? S.guide.hint4 : n === 1 ? S.guide.hint1 : S.guide.hintMid,
+    index: g.index,
   };
 }

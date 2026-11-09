@@ -1,6 +1,6 @@
 import { chromium, expect, test, type Browser, type Page } from "@playwright/test";
 import { join } from "node:path";
-import { FIXTURE_DIR, SEQUENCES } from "./wav";
+import { FIXTURE_DIR, SEQUENCES, TONES } from "./wav";
 
 test("first launch offers the setup; 'I know my tuning' skips it for good", async ({ page }) => {
   await page.goto("/");
@@ -170,6 +170,57 @@ test("a thin-looking string that sounds low shows the mismatch", async ({ baseUR
       await expect(page.getByText("Check this")).toBeVisible();
       await page.getByRole("button", { name: "Listen again" }).click();
       await expect(page.getByRole("heading", { name: "Let the app listen" })).toBeVisible();
+    },
+    baseURL ?? "",
+  );
+});
+
+test("guided tuning moves from string 4 to string 3 once G4 is in tune", async ({ baseURL }) => {
+  await withMic(
+    TONES.g4.file,
+    async (page) => {
+      await page.getByRole("button", { name: /Set up my ukulele/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: /^Concert/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: /^Thinner/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: "Skip" }).click();
+      await page.getByRole("button", { name: "Tune it with me" }).click();
+      await expect(page.locator(".guide-title")).toHaveText("String 4 · G");
+      await expect(page.getByText("Round 1 of 2")).toBeVisible();
+      await expect(page.locator(".guide-title")).toHaveText("String 3 · C", { timeout: 6000 });
+      await page.getByRole("button", { name: "Skip string" }).click();
+      await expect(page.locator(".guide-title")).toHaveText("String 2 · E");
+      await page.getByRole("button", { name: "Leave guided tuning" }).click();
+      await expect(page.locator(".tuning-row select")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Auto" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    },
+    baseURL ?? "",
+  );
+});
+
+test("finishing both rounds shows the done card", async ({ baseURL }) => {
+  await withMic(
+    TONES.e4flat.file,
+    async (page) => {
+      await page.getByRole("button", { name: /Set up my ukulele/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: /^Not sure/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: /^Can't tell/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: "Skip" }).click();
+      await page.getByRole("button", { name: "Tune it with me" }).click();
+      const skip = page.getByRole("button", { name: "Skip string" });
+      for (let i = 0; i < 8; i++) await skip.click();
+      await expect(page.locator(".guide-title")).toHaveText("All four strings are in tune.");
+      await expect(skip).toBeHidden();
+      await page.getByRole("button", { name: "Done" }).click();
+      await expect(page.locator(".tuning-row select")).toBeVisible();
     },
     baseURL ?? "",
   );

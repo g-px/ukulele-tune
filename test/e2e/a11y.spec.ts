@@ -1,5 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { chromium, expect, test, type Page } from "@playwright/test";
+import { join } from "node:path";
+import { FIXTURE_DIR, TONES } from "./wav";
 
 async function audit(page: Page, label: string) {
   const results = await new AxeBuilder({ page })
@@ -55,3 +57,35 @@ test("no axe violations on the microphone error screen", async ({ page }) => {
   await expect(page.locator(".mic-error")).toBeVisible();
   await audit(page, "mic-error");
 });
+
+for (const scheme of ["dark", "light"] as const) {
+  test(`no axe violations in guided tuning (${scheme})`, async ({ baseURL }) => {
+    const browser = await chromium.launch({
+      args: [
+        "--use-fake-ui-for-media-stream",
+        "--use-fake-device-for-media-stream",
+        `--use-file-for-fake-audio-capture=${join(FIXTURE_DIR, TONES.e4flat.file)}`,
+      ],
+    });
+    try {
+      const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+      const page = await context.newPage();
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto(baseURL ?? "");
+      await page.getByRole("button", { name: /Set up my ukulele/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: /^Concert/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: /^Thinner/ }).click();
+      await page.getByRole("button", { name: "Next" }).click();
+      await page.getByRole("button", { name: "Skip" }).click();
+      await page.getByRole("button", { name: "Tune it with me" }).click();
+      await expect(page.locator(".guide-title")).toHaveText("String 4 · G");
+      await audit(page, "guided");
+      for (let i = 0; i < 8; i++) await page.getByRole("button", { name: "Skip string" }).click();
+      await audit(page, "guided-done");
+    } finally {
+      await browser.close();
+    }
+  });
+}

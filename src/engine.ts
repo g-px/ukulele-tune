@@ -16,6 +16,7 @@ import {
   ATTACK_JUMP_DB,
   ATTACK_SKIP_MS,
   CLARITY_THRESHOLD,
+  GUIDE_HOLD_MS,
   EMA_ALPHA,
   HIGHPASS_HZ,
   HOLD_MS,
@@ -36,7 +37,13 @@ import {
   type TunerReading,
 } from "./core/tuner";
 import { getTuning, type StringNumber } from "./core/tunings";
-import { startGuide } from "./core/guide";
+import {
+  currentString,
+  skipGuideString,
+  startGuide,
+  stepGuide,
+  type GuideState,
+} from "./core/guide";
 import type { Actions, AppState, Screen } from "./state/app-state";
 import { createListenSequencer } from "./state/listen";
 import {
@@ -129,6 +136,17 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
     const reading = tuner.process({ ...pitch, rmsDbfs: level, timeMs: now });
     if (reading.inTune && !st.reading.inTune) navigator.vibrate?.(30);
     if (st.setup?.step === "listen") feedListen(st.setup, reading, now);
+    if (st.guide && !st.guide.done) {
+      const next = stepGuide(
+        st.guide,
+        { stringNumber: reading.stringNumber, inTune: reading.inTune, timeMs: now },
+        GUIDE_HOLD_MS,
+      );
+      if (next !== st.guide) {
+        setGuide(next);
+        if (currentString(next) !== currentString(st.guide)) return;
+      }
+    }
     store.set({
       reading,
       nowMs: now,
@@ -293,9 +311,19 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
     store.set({ setup: null, screen });
   }
 
+  /** Store the guide and lock the tuner on its string when the string changes. */
+  function setGuide(guide: GuideState): void {
+    const prev = store.get().guide;
+    const n = currentString(guide);
+    store.set({ guide, wrongWay: false });
+    if (prev && currentString(prev) === n) return;
+    if (prev) navigator.vibrate?.(30);
+    setMode(n === null ? { kind: "auto" } : { kind: "manual", stringNumber: n });
+  }
+
   function startGuided(): void {
-    store.set({ guide: startGuide(), wrongWay: false, screen: "tuner" });
-    setMode({ kind: "manual", stringNumber: 4 });
+    store.set({ guide: null, screen: "tuner" });
+    setGuide(startGuide());
     if (store.get().micState !== "running") startMicFor("tuner");
   }
 
@@ -468,8 +496,11 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       if (next === "mic") startMicFor("tuner");
       else startTones();
     },
-    guideSkipString: () => undefined,
-    guideAgain: () => undefined,
+    guideSkipString: () => {
+      const guide = store.get().guide;
+      if (guide) setGuide(skipGuideString(guide));
+    },
+    guideAgain: () => startGuided(),
     guideExit: () => {
       store.set({ guide: null, wrongWay: false });
       setMode({ kind: "auto" });

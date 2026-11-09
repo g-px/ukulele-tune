@@ -63,6 +63,7 @@ export function createStringsPanel(actions: Actions) {
       setAttr(c.btn, "aria-pressed", String(v.locked));
       setClass(c.btn, "is-current", v.current);
       setClass(c.btn, "is-warn", v.warn);
+      setClass(c.btn, "is-done", v.done);
       setHidden(c.lock, !v.locked);
       if (c.toneOn !== v.tone) {
         c.toneOn = v.tone;

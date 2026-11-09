@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { EMPTY_READING, type TunerReading } from "../../src/core/tuner";
 import { initialState, type AppState } from "../../src/state/app-state";
+import { skipGuideString, startGuide } from "../../src/core/guide";
 import {
+  guideView,
   announcement,
   formatCents,
   needleLabel,
@@ -185,5 +187,46 @@ describe("announcement", () => {
     expect(announcement(state({}, FLAT_E))).toBe("E4, 23 cents flat, tighten");
     expect(announcement(state({}, IN_TUNE))).toBe("G4, in tune");
     expect(announcement(state())).toBe("");
+  });
+});
+
+describe("guided tuning views", () => {
+  it("is hidden without a guide", () => {
+    expect(guideView(state()).visible).toBe(false);
+    expect(stringViews(state()).every((v) => !v.done)).toBe(true);
+  });
+
+  it("names the current string and marks done and next tiles", () => {
+    const guide = skipGuideString(startGuide());
+    const st = state({ guide, mode: { kind: "manual", stringNumber: 3 } });
+    expect(guideView(st)).toMatchObject({
+      visible: true,
+      done: false,
+      step: "Step 2 of 4",
+      round: "Round 1 of 2",
+      title: "String 3 · C",
+      index: 1,
+    });
+    const views = stringViews(st);
+    expect(views.map((v) => v.done)).toEqual([true, false, false, false]);
+    expect(views.map((v) => v.sub)).toEqual(["String 4", "String 3", "Next", "String 1"]);
+  });
+
+  it("uses position hints for the outer strings", () => {
+    expect(guideView(state({ guide: startGuide() })).hint).toContain("Closest to your face");
+    let g = startGuide();
+    for (let i = 0; i < 3; i++) g = skipGuideString(g);
+    expect(guideView(state({ guide: g })).hint).toContain("Closest to the floor");
+  });
+
+  it("shows the done card after round 2", () => {
+    let g = startGuide();
+    for (let i = 0; i < 8; i++) g = skipGuideString(g);
+    expect(guideView(state({ guide: g }))).toMatchObject({
+      visible: true,
+      done: true,
+      title: "All four strings are in tune.",
+    });
+    expect(stringViews(state({ guide: g })).every((v) => v.done)).toBe(true);
   });
 });

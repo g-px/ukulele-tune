@@ -1394,3 +1394,106 @@ input[type="range"] {
 .setup-header .link-btn {
   align-self: auto;
 }
+
+/* Guided tuning (artboard 14) */
+.guide-round {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.guide-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.guide-card.is-done {
+  background: var(--ok-bg);
+}
+.guide-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.guide-step {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.guide-pills {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.guide-pills span {
+  width: 22px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+}
+.guide-pills span.on {
+  background: var(--accent);
+}
+.guide-card.is-done .guide-pills span {
+  background: var(--ok);
+}
+.guide-title {
+  font-size: 20px;
+  font-weight: 800;
+}
+.guide-hint {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.guide-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.guide-buttons .btn-primary,
+.guide-buttons .btn-secondary {
+  height: 48px;
+  font-size: 15px;
+}
+.tuner.is-guided .note {
+  margin-top: 0;
+}
+.tuner.is-guided .tone-btn {
+  display: none;
+}
+.wrong-way {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-string);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.wrong-way svg {
+  flex-shrink: 0;
+  color: var(--warn);
+}
+.guide-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.guide-footer .btn-ghost {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 16px;
+  color: var(--text);
+}

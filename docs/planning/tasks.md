@@ -167,7 +167,7 @@ commit, `npm run check` green, push to `main`.
   "Tune it with me" saves `tuningId`/`ukuleleSize`/`onboarded`; "Pick the
   tuning myself" opens Settings. E2E: full wizard → high G (`g4-c4.wav`) and
   → low G (`g3-c4.wav`); tuner shows the chosen tuning afterwards. axe.
-- [ ] **T36 Guided tuning (artboard 14).** Coach card, string tiles, round
+- [x] **T36 Guided tuning (artboard 14).** Coach card, string tiles, round
   counter, Skip string, done card (Go round again / Done), × leaves to auto
   mode, vibrate on advance. E2E with `g4.wav`: string 4 completes, coach moves
   to string 3. axe.
