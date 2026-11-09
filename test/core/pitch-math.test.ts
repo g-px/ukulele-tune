@@ -7,6 +7,7 @@ import {
   nearestMidi,
   noteName,
   prettyAccidentals,
+  solfege,
 } from "../../src/core/pitch-math";
 
 describe("midiToFreq", () => {
@@ -74,5 +75,22 @@ describe("noteName", () => {
     expect(prettyAccidentals("F#4")).toBe("F♯4");
     expect(prettyAccidentals("Bb3")).toBe("B♭3");
     expect(prettyAccidentals("E4")).toBe("E4");
+  });
+});
+
+describe("solfege", () => {
+  it("names the seven letters and keeps accidentals", () => {
+    expect(["C", "D", "E", "F", "G", "A", "B"].map(solfege)).toEqual([
+      "Dó",
+      "Ré",
+      "Mi",
+      "Fá",
+      "Sol",
+      "Lá",
+      "Si",
+    ]);
+    expect(solfege("F#")).toBe("Fá♯");
+    expect(solfege("Bb")).toBe("Si♭");
+    expect(solfege("?")).toBe("?");
   });
 });

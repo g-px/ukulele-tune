@@ -82,3 +82,21 @@ export function noteName(midi: number, flats = false): NoteName {
 export function prettyAccidentals(label: string): string {
   return label.replace("#", "♯").replace(/([A-G])b/, "$1♭");
 }
+
+const SOLFEGE: Record<string, string> = {
+  C: "Dó",
+  D: "Ré",
+  E: "Mi",
+  F: "Fá",
+  G: "Sol",
+  A: "Lá",
+  B: "Si",
+};
+
+/** Solfège name of a letter note ("F#" → "Fá♯", "Bb" → "Si♭"); unknown input is returned as is. */
+export function solfege(letter: string): string {
+  const base = SOLFEGE[letter.charAt(0)];
+  if (!base) return letter;
+  const accidental = letter.slice(1).replace("#", "♯").replace("b", "♭");
+  return base + accidental;
+}

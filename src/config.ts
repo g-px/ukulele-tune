@@ -26,3 +26,9 @@ export const A4_DEFAULT = 440;
 
 export const NEEDLE_RANGE_CENTS = 50;
 export const ANNOUNCE_INTERVAL_MS = 1000;
+
+export const CAPTURE_MIN_MS = 300;
+export const CAPTURE_TOLERANCE_CENTS = 30;
+/** Before capturing string 3: this much silence, or a pitch this far from string 4. */
+export const CAPTURE_GAP_MS = 200;
+export const CAPTURE_MIN_CHANGE_CENTS = 100;

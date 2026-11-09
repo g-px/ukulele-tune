@@ -143,7 +143,7 @@ commit, `npm run check` green, push to `main`.
   context shows Portuguese start screen and `lang="pt-BR"`; English switch
   reloads in English; no horizontal overflow at 390 px on v1 screens in pt-BR.
   Existing English e2e tests unchanged and green.
-- [ ] **T30 identify + capture + solfège.** `src/core/identify.ts` (§4.1, the
+- [x] **T30 identify + capture + solfège.** `src/core/identify.ts` (§4.1, the
   whole table as tests), `src/core/stable-capture.ts` (§4.2),
   `solfege()` in `pitch-math.ts` (§4.7). Constants in `config.ts`.
 - [ ] **T31 guide + wrong-way.** `src/core/guide.ts` (§4.4),
