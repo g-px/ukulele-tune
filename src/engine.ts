@@ -3,7 +3,7 @@
  * tuner and tone player, runs the per-frame loop and implements Actions.
  */
 import { audioContextSupported, closeAudioContext, ensureAudioContext } from "./audio/context";
-import { classifyMicError, micEnvironmentError } from "./audio/mic-errors";
+import { classifyMicError, micEnvironmentError, type MicError } from "./audio/mic-errors";
 import {
   createMicSession,
   requestMicStream,
@@ -30,7 +30,17 @@ import { midiToFreq } from "./core/pitch-math";
 import { dbfs, peak, rms } from "./core/signal";
 import { EMPTY_READING, createTuner, type TunerConfig, type TunerMode } from "./core/tuner";
 import { getTuning, type StringNumber } from "./core/tunings";
+import { startGuide } from "./core/guide";
 import type { Actions, AppState, Screen } from "./state/app-state";
+import {
+  EMPTY_LISTEN,
+  canGoNext,
+  nextStep,
+  prevStep,
+  result,
+  startSetup,
+  type SetupState,
+} from "./state/setup";
 import {
   DEFAULT_SETTINGS,
   saveSettings,
@@ -75,6 +85,9 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
   let attempt = 0;
   let deadFrames = 0;
   let frameCount = 0;
+  /** Where a started mic lands: the tuner, or stay put (the setup listen step). */
+  let micTarget: "tuner" | "stay" = "tuner";
+  let setupReturn: Screen = "start";
   let resumeOnVisible = false;
   const tuner = createTuner(tunerConfig(store.get().settings, store.get().mode));
 
@@ -166,7 +179,7 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       hasAudioContext: audioContextSupported(),
     });
     if (envError) {
-      store.set({ micState: "error", micError: envError, screen: "mic-error" });
+      micFailed(envError);
       return;
     }
     store.set({ micState: "starting", micSilent: false });
@@ -190,7 +203,7 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       store.set({
         micState: "running",
         micError: null,
-        screen: "tuner",
+        ...(micTarget === "tuner" ? { screen: "tuner" as const } : {}),
         lastNoteMs: now,
         nowMs: now,
         reading: EMPTY_READING,
@@ -200,7 +213,7 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       console.warn("[ukulele-tune] microphone failed", e);
       if (!mic) for (const t of stream?.getTracks() ?? []) t.stop();
       stopMicSession();
-      store.set({ micState: "error", micError: classifyMicError(e), screen: "mic-error" });
+      micFailed(classifyMicError(e));
     }
   }
 
@@ -214,6 +227,55 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
         c.resume().catch(() => undefined);
       }
     });
+  }
+
+  function startTones(): void {
+    stopMicSession();
+    void ensureAudioContext().catch(() => undefined);
+    store.set({ micState: "off", screen: "tuner", reading: EMPTY_READING });
+    startLoop();
+  }
+
+  function micFailed(micError: MicError): void {
+    if (micTarget === "stay") {
+      const setup = store.get().setup;
+      store.set({
+        micState: "error",
+        micError,
+        setup: setup ? { ...setup, listen: { ...EMPTY_LISTEN, skipped: true } } : null,
+      });
+    } else {
+      store.set({ micState: "error", micError, screen: "mic-error" });
+    }
+  }
+
+  function startMicFor(target: "tuner" | "stay"): void {
+    micTarget = target;
+    void beginMic();
+  }
+
+  function setSetup(setup: SetupState): void {
+    const prev = store.get().setup;
+    const entering = setup.step === "listen" && prev?.step !== "listen";
+    const leaving = setup.step !== "listen" && prev?.step === "listen";
+    if (entering) setMode({ kind: "chromatic" });
+    if (leaving) setMode({ kind: "auto" });
+    store.set({ setup });
+  }
+
+  function closeSetup(screen: Screen): void {
+    if (store.get().setup?.step === "listen") setMode({ kind: "auto" });
+    if (store.get().micState === "running") {
+      stopMicSession();
+      store.set({ micState: "idle" });
+    }
+    store.set({ setup: null, screen });
+  }
+
+  function startGuided(): void {
+    store.set({ guide: startGuide(), wrongWay: false, screen: "tuner" });
+    setMode({ kind: "manual", stringNumber: 4 });
+    if (store.get().micState !== "running") startMicFor("tuner");
   }
 
   function stopTone(): void {
@@ -297,13 +359,8 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
   applyTheme(store.get().settings.theme);
 
   return {
-    startMic: () => void beginMic(),
-    startTonesOnly: () => {
-      stopMicSession();
-      void ensureAudioContext().catch(() => undefined);
-      store.set({ micState: "off", screen: "tuner", reading: EMPTY_READING });
-      startLoop();
-    },
+    startMic: () => startMicFor("tuner"),
+    startTonesOnly: startTones,
     navigate: (screen: Screen) => {
       const cur = store.get().screen;
       const returnTo = cur === "settings" || cur === "help" ? store.get().returnTo : cur;
@@ -324,7 +381,76 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       else void playTone(n);
     },
     updateSettings,
-    resetSettings: () => updateSettings({ ...DEFAULT_SETTINGS }),
+    resetSettings: () => {
+      const { language, onboarded, ukuleleSize } = store.get().settings;
+      updateSettings({ ...DEFAULT_SETTINGS, language, onboarded, ukuleleSize });
+    },
+    openSetup: () => {
+      const cur = store.get().screen;
+      setupReturn = cur === "setup" ? setupReturn : cur;
+      stopTone();
+      store.set({ setup: startSetup(), guide: null, screen: "setup" });
+    },
+    setupAnswer: (patch) => {
+      const setup = store.get().setup;
+      if (setup) store.set({ setup: { ...setup, ...patch } });
+    },
+    setupNext: () => {
+      const setup = store.get().setup;
+      if (setup && canGoNext(setup)) setSetup(nextStep(setup));
+    },
+    setupBack: () => {
+      const setup = store.get().setup;
+      if (!setup) return;
+      if (setup.step === "hold") closeSetup(setupReturn);
+      else setSetup(prevStep(setup));
+    },
+    setupSkip: () => {
+      updateSettings({ onboarded: true });
+      closeSetup(setupReturn === "setup" ? "start" : setupReturn);
+    },
+    setupListenStart: () => {
+      const setup = store.get().setup;
+      if (setup) store.set({ setup: { ...setup, listen: EMPTY_LISTEN } });
+      startMicFor("stay");
+    },
+    setupListenRestart: () => {
+      const setup = store.get().setup;
+      if (setup) store.set({ setup: { ...setup, listen: EMPTY_LISTEN } });
+    },
+    setupListenSkip: () => {
+      const setup = store.get().setup;
+      if (!setup) return;
+      setSetup({ ...setup, step: "result", listen: { ...EMPTY_LISTEN, skipped: true } });
+    },
+    setupFinish: (next) => {
+      const setup = store.get().setup;
+      if (!setup) return;
+      const found = result(setup);
+      updateSettings({
+        tuningId: found.tuningId,
+        ukuleleSize: setup.size ?? "unknown",
+        onboarded: true,
+      });
+      store.set({ setup: null });
+      if (next === "guide") {
+        startGuided();
+      } else {
+        closeSetup("settings");
+        store.set({ returnTo: "start" });
+      }
+    },
+    skipOnboarding: (next) => {
+      updateSettings({ onboarded: true });
+      if (next === "mic") startMicFor("tuner");
+      else startTones();
+    },
+    guideSkipString: () => undefined,
+    guideAgain: () => undefined,
+    guideExit: () => {
+      store.set({ guide: null, wrongWay: false });
+      setMode({ kind: "auto" });
+    },
   };
 }
 

@@ -9,6 +9,7 @@ import {
   GATE_MIN_DBFS,
   type BufferSize,
 } from "../config";
+import { UKE_SIZES, type UkeSize } from "../core/identify";
 import { DEFAULT_TUNING_ID, findTuning } from "../core/tunings";
 import { LANGUAGE_PREFS, type LanguagePref } from "./locale";
 
@@ -24,6 +25,9 @@ export interface Settings {
   bufferSize: BufferSize;
   gateDbfs: number;
   language: LanguagePref;
+  /** The first-launch screen has been answered or skipped. */
+  onboarded: boolean;
+  ukuleleSize: UkeSize;
 }
 
 export const DEFAULT_SETTINGS: Readonly<Settings> = {
@@ -36,6 +40,8 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = {
   bufferSize: DEFAULT_BUFFER_SIZE,
   gateDbfs: DEFAULT_GATE_DBFS,
   language: "auto",
+  onboarded: false,
+  ukuleleSize: "unknown",
 };
 
 export const STORAGE_KEY = "ukulele-tune.settings.v1";
@@ -70,13 +76,22 @@ export function sanitizeSettings(raw: unknown): Settings {
     language: LANGUAGE_PREFS.includes(r.language as LanguagePref)
       ? (r.language as LanguagePref)
       : d.language,
+    onboarded: typeof r.onboarded === "boolean" ? r.onboarded : d.onboarded,
+    ukuleleSize: UKE_SIZES.includes(r.ukuleleSize as UkeSize)
+      ? (r.ukuleleSize as UkeSize)
+      : d.ukuleleSize,
   };
 }
 
 export function loadSettings(storage: KeyValueStorage | null): Settings {
   try {
     const text = storage?.getItem(STORAGE_KEY);
-    return sanitizeSettings(text ? JSON.parse(text) : {});
+    const raw: unknown = text ? JSON.parse(text) : {};
+    const settings = sanitizeSettings(raw);
+    // Settings saved before the beginner setup existed belong to a returning user.
+    const isObject = typeof raw === "object" && raw !== null;
+    if (text && isObject && !("onboarded" in raw)) settings.onboarded = true;
+    return settings;
   } catch {
     return { ...DEFAULT_SETTINGS };
   }

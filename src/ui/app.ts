@@ -3,6 +3,7 @@ import type { Store } from "../state/store";
 import { helpScreen } from "./help-screen";
 import { micErrorScreen } from "./mic-error-screen";
 import { settingsScreen } from "./settings-screen";
+import { setupScreen } from "./setup-screen";
 import { startScreen } from "./start-screen";
 import { tunerScreen } from "./tuner-screen";
 
@@ -14,6 +15,7 @@ export function mountApp(root: HTMLElement, store: Store<AppState>, actions: Act
     settings: settingsScreen(store, actions),
     help: helpScreen(actions),
     "mic-error": micErrorScreen(store, actions),
+    setup: setupScreen(store, actions),
   };
   root.replaceChildren(...Object.values(screens));
 

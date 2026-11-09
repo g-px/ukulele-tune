@@ -149,7 +149,7 @@ commit, `npm run check` green, push to `main`.
 - [x] **T31 guide + wrong-way.** `src/core/guide.ts` (§4.4),
   `src/core/wrong-way.ts` (§4.5), `TunerReading.attack` in `tuner.ts` with a
   test. All tests listed in the spec.
-- [ ] **T32 Setup state.** Settings `onboarded` (3 migration cases) and
+- [x] **T32 Setup state.** Settings `onboarded` (3 migration cases) and
   `ukuleleSize`; `src/state/setup.ts` (§4.6) with tests; `AppState`/`Actions`
   additions (§3) with no-op UI wiring.
 - [ ] **T33 Setup screens 8–11 + entry points.** `start-screen.ts` first-launch

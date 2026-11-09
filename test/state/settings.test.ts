@@ -36,6 +36,22 @@ describe("settings", () => {
     expect(loadSettings(s)).toEqual(custom);
   });
 
+  it("a first visit is not onboarded; a returning v1 user is", () => {
+    expect(loadSettings(fakeStorage()).onboarded).toBe(false);
+    const v1 = fakeStorage({ [STORAGE_KEY]: JSON.stringify({ a4: 442 }) });
+    expect(loadSettings(v1).onboarded).toBe(true);
+    const fresh = fakeStorage({ [STORAGE_KEY]: JSON.stringify({ onboarded: false }) });
+    expect(loadSettings(fresh).onboarded).toBe(false);
+  });
+
+  it("keeps a valid ukulele size and repairs an unknown one", () => {
+    expect(sanitizeSettings({ ukuleleSize: "tenor" }).ukuleleSize).toBe("tenor");
+    expect(sanitizeSettings({ ukuleleSize: "bass" }).ukuleleSize).toBe("unknown");
+    const s = fakeStorage();
+    saveSettings(s, { ...DEFAULT_SETTINGS, onboarded: true, ukuleleSize: "concert" });
+    expect(loadSettings(s)).toMatchObject({ onboarded: true, ukuleleSize: "concert" });
+  });
+
   it("keeps a valid language and repairs an unknown one", () => {
     expect(sanitizeSettings({ language: "pt-BR" }).language).toBe("pt-BR");
     expect(sanitizeSettings({ language: "en" }).language).toBe("en");
