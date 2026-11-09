@@ -126,7 +126,65 @@ Status: `[ ]` todo, `[~]` in progress, `[x]` done (tick it in the finishing comm
   the input is exact silence, match context and mic sample rates, iOS audio
   session, `?debug` readout, build id in Help (decision 14).
 
+## Milestone M5: beginner setup, guided tuning, pt-BR (artboards 8–15)
+
+Spec: `docs/planning/beginner-setup.md` (section numbers below refer to it).
+Facts: `docs/knowledge/08-beginners.md`. Same rules as v1: one task per
+commit, `npm run check` green, push to `main`.
+
+- [x] **T28 Plan.** Knowledge doc 08, `beginner-setup.md`, artboards 8–15 on
+  the canvas, decisions 15–18, this task list.
+- [ ] **T29 i18n foundation + pt-BR for v1.** §5 and §4.8: move strings to
+  `src/i18n/en.ts`, `Strings` type, `src/i18n/pt-BR.ts` with every v1 string
+  translated (glossary in knowledge 08), `S` live binding + `setLocale`,
+  `resolveLocale` + tests, `language` setting + sanitize tests, Settings
+  Language row (reload on change), `<html lang>`, `S.tuningName(id)`, remove
+  hard-coded English from `src/ui`/`src/state`. E2E `i18n.spec.ts`: pt-BR
+  context shows Portuguese start screen and `lang="pt-BR"`; English switch
+  reloads in English; no horizontal overflow at 390 px on v1 screens in pt-BR.
+  Existing English e2e tests unchanged and green.
+- [ ] **T30 identify + capture + solfège.** `src/core/identify.ts` (§4.1, the
+  whole table as tests), `src/core/stable-capture.ts` (§4.2),
+  `solfege()` in `pitch-math.ts` (§4.7). Constants in `config.ts`.
+- [ ] **T31 guide + wrong-way.** `src/core/guide.ts` (§4.4),
+  `src/core/wrong-way.ts` (§4.5), `TunerReading.attack` in `tuner.ts` with a
+  test. All tests listed in the spec.
+- [ ] **T32 Setup state.** Settings `onboarded` (3 migration cases) and
+  `ukuleleSize`; `src/state/setup.ts` (§4.6) with tests; `AppState`/`Actions`
+  additions (§3) with no-op UI wiring.
+- [ ] **T33 Setup screens 8–11 + entry points.** `start-screen.ts` first-launch
+  variant (artboard 8, language control), `src/ui/setup-screen.ts` steps
+  hold/size/look (artboards 9–11), `src/ui/illustrations.ts`, tokens
+  `--string`, `--wood-1..3`; Start link, Settings link, Help card (§2, §6).
+  E2E: first launch shows 8; "I know my tuning" → onboarded survives reload;
+  baritone skips the look step; Skip leaves the wizard. axe on 8–11.
+- [ ] **T34 Listen step (artboard 12).** Engine wiring (§4.3, §7): chromatic
+  mode, capture slots, silence/100-cent gate before slot 3, "sounded the
+  same" state, mic-off path, Start over. `writeSequence` + fixtures
+  `g4-c4.wav`, `g3-c4.wav` (§9). E2E: both strings captured from each fixture.
+- [ ] **T35 Result (artboard 13).** Headline, explanation by basis/conflict,
+  string map from the tuning, tips, conflict variant with Listen again;
+  "Tune it with me" saves `tuningId`/`ukuleleSize`/`onboarded`; "Pick the
+  tuning myself" opens Settings. E2E: full wizard → high G (`g4-c4.wav`) and
+  → low G (`g3-c4.wav`); tuner shows the chosen tuning afterwards. axe.
+- [ ] **T36 Guided tuning (artboard 14).** Coach card, string tiles, round
+  counter, Skip string, done card (Go round again / Done), × leaves to auto
+  mode, vibrate on advance. E2E with `g4.wav`: string 4 completes, coach moves
+  to string 3. axe.
+- [ ] **T37 Wrong-way hint.** Wire the detector in guided and manual mode,
+  alert card for 4 s (`WRONG_WAY_SHOW_MS`), copy per §8. Unit tests cover the
+  logic; e2e only checks the card is absent on a steady in-tune tone.
+- [ ] **T38 pt-BR for M5 + solfège in guidance.** Every §8 key in `pt-BR.ts`,
+  solfège beneath letters on the result string map and in guide/setup
+  sentences (artboard 15). E2E: setup steps 8–13 and guided tuning in pt-BR
+  have no horizontal overflow; axe in pt-BR. Owner (native speaker) reviews
+  the pt-BR copy before this is ticked.
+- [ ] **T39 Docs refresh.** README (beginner setup, languages), Help copy
+  mentions the setup, `CLAUDE.md` status line, decisions if anything changed
+  while implementing.
+
 ## Backlog (not scheduled)
 Intonation check, relative-tuning helper, custom tunings UI, N-string
-instruments, pt-BR i18n and solfège, AudioWorklet path, strobe display,
-real-ukulele WAV fixtures, light-theme design artboards.
+instruments, AudioWorklet path, strobe display, real-ukulele WAV fixtures,
+light-theme design artboards, more languages, full-tuning auto-detect from
+four strings.

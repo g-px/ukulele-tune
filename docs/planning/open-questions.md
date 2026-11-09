@@ -12,7 +12,7 @@ is given, that is what will be built if there is no answer.
 2. **Primary device:** phone in the browser (likely), desktop, or both? Should
    it be installable offline as a PWA? *Default: mobile-first responsive web
    app, installable PWA.*
-3. **[decided: English only]** **UI language:** Portuguese (pt-BR), English, or both with a switch?
+3. **[decided: English only for v1; English + pt-BR from M5, decision 17]** **UI language:** Portuguese (pt-BR), English, or both with a switch?
    Should note names offer solfège (Dó Ré Mi) as an option? *Default: pt-BR
    and en, letter names with a solfège toggle.*
 4. **Name / branding / visual style** for the app (colours, dark mode, logo)?
