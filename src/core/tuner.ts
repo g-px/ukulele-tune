@@ -54,6 +54,8 @@ export interface TunerReading {
   level: number;
   /** True while a previous reading is held after the signal stopped. */
   stale: boolean;
+  /** True on the frame the level jumped by more than attackJumpDb (a new pluck). */
+  attack: boolean;
 }
 
 export const EMPTY_READING: TunerReading = {
@@ -68,6 +70,7 @@ export const EMPTY_READING: TunerReading = {
   octaveHint: "none",
   level: 0,
   stale: false,
+  attack: false,
 };
 
 /** Smoothed pitch jumping more than this resets the EMA (new string plucked). */
@@ -148,12 +151,16 @@ export function createTuner(initial: TunerConfig) {
   }
 
   function process(frame: FrameInput): TunerReading {
-    const level = levelFromDbfs(frame.rmsDbfs);
     const jump = frame.rmsDbfs - prevDbfs;
     prevDbfs = frame.rmsDbfs;
-    if (config.attackSkipMs > 0 && jump > config.attackJumpDb && Number.isFinite(jump)) {
-      attackUntil = frame.timeMs + config.attackSkipMs;
-    }
+    const attack = Number.isFinite(jump) && jump > config.attackJumpDb;
+    if (attack && config.attackSkipMs > 0) attackUntil = frame.timeMs + config.attackSkipMs;
+    const reading = read(frame);
+    return reading.attack === attack ? reading : { ...reading, attack };
+  }
+
+  function read(frame: FrameInput): TunerReading {
+    const level = levelFromDbfs(frame.rmsDbfs);
 
     if (!(frame.rmsDbfs >= config.gateDbfs)) return held("silent", level, frame.timeMs);
     if (frame.frequency <= 0 || frame.clarity < config.clarityThreshold) {
@@ -183,6 +190,7 @@ export function createTuner(initial: TunerConfig) {
       octaveHint: m.octaveHint,
       level,
       stale: false,
+      attack: false,
     };
     if (m.partnerTuningId) reading.partnerTuningId = m.partnerTuningId;
     last = reading;

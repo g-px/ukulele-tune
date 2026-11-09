@@ -123,6 +123,14 @@ describe("tuner: gating and hold", () => {
     expect(settled.status).toBe("note");
   });
 
+  it("flags the frame where the level jumps as an attack", () => {
+    const t = createTuner(config());
+    expect(t.process({ frequency: 0, clarity: 0, rmsDbfs: -70, timeMs: 0 }).attack).toBe(false);
+    expect(t.process({ frequency: 392, clarity: 1, rmsDbfs: -20, timeMs: 16 }).attack).toBe(true);
+    expect(t.process({ frequency: 392, clarity: 1, rmsDbfs: -22, timeMs: 33 }).attack).toBe(false);
+    expect(t.process({ frequency: 392, clarity: 1, rmsDbfs: -21, timeMs: 50 }).attack).toBe(false);
+  });
+
   it("maps level from dBFS", () => {
     expect(levelFromDbfs(0)).toBe(1);
     expect(levelFromDbfs(-30)).toBe(0.5);

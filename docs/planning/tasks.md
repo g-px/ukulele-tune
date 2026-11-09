@@ -146,7 +146,7 @@ commit, `npm run check` green, push to `main`.
 - [x] **T30 identify + capture + solfège.** `src/core/identify.ts` (§4.1, the
   whole table as tests), `src/core/stable-capture.ts` (§4.2),
   `solfege()` in `pitch-math.ts` (§4.7). Constants in `config.ts`.
-- [ ] **T31 guide + wrong-way.** `src/core/guide.ts` (§4.4),
+- [x] **T31 guide + wrong-way.** `src/core/guide.ts` (§4.4),
   `src/core/wrong-way.ts` (§4.5), `TunerReading.attack` in `tuner.ts` with a
   test. All tests listed in the spec.
 - [ ] **T32 Setup state.** Settings `onboarded` (3 migration cases) and

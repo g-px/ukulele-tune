@@ -32,3 +32,8 @@ export const CAPTURE_TOLERANCE_CENTS = 30;
 /** Before capturing string 3: this much silence, or a pitch this far from string 4. */
 export const CAPTURE_GAP_MS = 200;
 export const CAPTURE_MIN_CHANGE_CENTS = 100;
+
+export const GUIDE_HOLD_MS = 1000;
+export const WRONG_WAY_WINDOW_MS = 800;
+export const WRONG_WAY_GROW_CENTS = 15;
+export const WRONG_WAY_SHOW_MS = 4000;
