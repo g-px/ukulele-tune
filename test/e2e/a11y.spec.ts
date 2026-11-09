@@ -89,3 +89,25 @@ for (const scheme of ["dark", "light"] as const) {
     }
   });
 }
+
+test.describe("pt-BR", () => {
+  test.use({ locale: "pt-BR" });
+
+  test("no axe violations on the Portuguese screens", async ({ page }) => {
+    await page.goto("/");
+    await audit(page, "pt-start");
+    await page.getByRole("button", { name: /Configurar meu ukulele/ }).click();
+    await audit(page, "pt-setup-hold");
+    await page.getByRole("button", { name: "Avançar" }).click();
+    await page.getByRole("button", { name: /^Concert/ }).click();
+    await audit(page, "pt-setup-size");
+    await page.getByRole("button", { name: "Avançar" }).click();
+    await page.getByRole("button", { name: /^Mais fina/ }).click();
+    await audit(page, "pt-setup-look");
+    await page.getByRole("button", { name: "Avançar" }).click();
+    await page.getByRole("button", { name: "Pular" }).click();
+    await audit(page, "pt-setup-result");
+    await page.getByRole("button", { name: "Não é esse? Escolher a afinação" }).click();
+    await audit(page, "pt-settings");
+  });
+});

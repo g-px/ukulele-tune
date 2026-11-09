@@ -40,3 +40,23 @@ test("choosing English in Settings reloads in English and sticks", async ({ page
   await page.reload();
   await expect(page.getByRole("button", { name: "Start tuner" })).toBeVisible();
 });
+
+test("the setup wizard fits and shows solfège in Portuguese", async ({ page }) => {
+  await page.goto("/");
+  await noHorizontalOverflow(page, "start-first-launch");
+  await page.getByRole("button", { name: /Configurar meu ukulele/ }).click();
+  await expect(page.getByRole("heading", { name: "Segure assim" })).toBeVisible();
+  await noHorizontalOverflow(page, "setup-hold");
+  await page.getByRole("button", { name: "Avançar" }).click();
+  await page.getByRole("button", { name: /^Concert/ }).click();
+  await noHorizontalOverflow(page, "setup-size");
+  await page.getByRole("button", { name: "Avançar" }).click();
+  await page.getByRole("button", { name: /^Mais fina/ }).click();
+  await noHorizontalOverflow(page, "setup-look");
+  await page.getByRole("button", { name: "Avançar" }).click();
+  await noHorizontalOverflow(page, "setup-listen");
+  await page.getByRole("button", { name: "Pular" }).click();
+  await expect(page.getByRole("heading", { name: "Concert · Sol agudo" })).toBeVisible();
+  await expect(page.locator(".map-letter small")).toHaveText(["Sol", "Dó", "Mi", "Lá"]);
+  await noHorizontalOverflow(page, "setup-result");
+});

@@ -174,7 +174,7 @@ commit, `npm run check` green, push to `main`.
 - [x] **T37 Wrong-way hint.** Wire the detector in guided and manual mode,
   alert card for 4 s (`WRONG_WAY_SHOW_MS`), copy per §8. Unit tests cover the
   logic; e2e only checks the card is absent on a steady in-tune tone.
-- [ ] **T38 pt-BR for M5 + solfège in guidance.** Every §8 key in `pt-BR.ts`,
+- [~] **T38 pt-BR for M5 + solfège in guidance.** (Implemented and tested; waiting for the owner's review of the pt-BR copy.) Every §8 key in `pt-BR.ts`,
   solfège beneath letters on the result string map and in guide/setup
   sentences (artboard 15). E2E: setup steps 8–13 and guided tuning in pt-BR
   have no horizontal overflow; axe in pt-BR. Owner (native speaker) reviews
