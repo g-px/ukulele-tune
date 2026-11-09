@@ -152,7 +152,7 @@ commit, `npm run check` green, push to `main`.
 - [x] **T32 Setup state.** Settings `onboarded` (3 migration cases) and
   `ukuleleSize`; `src/state/setup.ts` (§4.6) with tests; `AppState`/`Actions`
   additions (§3) with no-op UI wiring.
-- [ ] **T33 Setup screens 8–11 + entry points.** `start-screen.ts` first-launch
+- [x] **T33 Setup screens 8–11 + entry points.** `start-screen.ts` first-launch
   variant (artboard 8, language control), `src/ui/setup-screen.ts` steps
   hold/size/look (artboards 9–11), `src/ui/illustrations.ts`, tokens
   `--string`, `--wood-1..3`; Start link, Settings link, Help card (§2, §6).

@@ -29,6 +29,26 @@ for (const scheme of ["dark", "light"] as const) {
   });
 }
 
+for (const scheme of ["dark", "light"] as const) {
+  test(`no axe violations in the setup wizard (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/");
+    await audit(page, "start-first-launch");
+    await page.getByRole("button", { name: /Set up my ukulele/ }).click();
+    await audit(page, "setup-hold");
+    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: /^Concert/ }).click();
+    await audit(page, "setup-size");
+    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: /^Thinner/ }).click();
+    await audit(page, "setup-look");
+    await page.getByRole("button", { name: "Next" }).click();
+    await audit(page, "setup-listen");
+    await page.getByRole("button", { name: "Skip" }).click();
+    await audit(page, "setup-result");
+  });
+}
+
 test("no axe violations on the microphone error screen", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Start tuner" }).click();

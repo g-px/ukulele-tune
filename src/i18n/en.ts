@@ -1,5 +1,6 @@
 /** English copy; the reference every other locale is typed against. */
 import type { MicError } from "../audio/mic-errors";
+import type { IdentifiedTuning } from "../core/identify";
 
 export const en = {
   appName: "Ukulele Tune",
@@ -35,6 +36,141 @@ export const en = {
     startTuner: "Start tuner",
     tonesOnly: "Tune by ear with reference tones",
     privacy: "Audio never leaves your device. Everything runs in your browser and works offline.",
+    firstLead:
+      "New to the ukulele? We will find out which one you have and tune it with you, step by step.",
+    setup: "Set up my ukulele",
+    setupSub: "About 1 minute",
+    knowTuning: "I know my tuning · Start tuner",
+    setupLink: "New to the ukulele? Set up my ukulele",
+  },
+
+  /** Show solfège (Dó Ré Mi) next to letter names in guidance text. */
+  showSolfege: false,
+
+  setup: {
+    label: "Set up my ukulele",
+    step: (n: number) => `Step ${n} of 4`,
+    skip: "Skip",
+    next: "Next",
+    back: "Back",
+    hold: {
+      title: "Hold it like this",
+      face: "↑ Toward your face",
+      floor: "↓ Toward the floor",
+      b1: "Neck to your left, strings facing out. Strum over the sound hole with your right hand.",
+      b1Left:
+        "Neck to your right, strings facing out. Strum over the sound hole with your left hand.",
+      b2: "String 4 is the one closest to your face. String 1 is closest to the floor.",
+      b3: "Each string ends at one peg on the head. Run a finger along it to find its peg.",
+      lefty: "I play left-handed",
+      leftySub: "Neck to your right; the drawing flips",
+      drawing:
+        "Ukulele as you hold it: string 4 at the top nearest your face, string 1 at the bottom nearest the floor",
+      head: "Head and pegs",
+      strum: "Strum here",
+    },
+    size: {
+      title: "How big is it?",
+      lead: "Measure from the top of the head to the bottom of the body.",
+      group: "Ukulele size",
+      names: {
+        soprano: "Soprano",
+        concert: "Concert",
+        tenor: "Tenor",
+        baritone: "Baritone",
+      },
+      length: (cm: number, inches: number) => `About ${cm} cm · ${inches} in`,
+      unsure: "Not sure · let the app listen",
+      info: "Soprano, concert and tenor all tune the same: G C E A. Only baritone is different. The size is often on a label inside the sound hole.",
+    },
+    look: {
+      title: "Look at string 4",
+      lead: "The one closest to your face. Compare it with string 3, right next to it.",
+      group: "String 4 compared with string 3",
+      thin: "Thinner than string 3",
+      thinTag: "High G · most common",
+      thick: "Thicker than string 3",
+      thickSub: "Often metal-wound, like a guitar string",
+      thickTag: "Low G",
+      unsure: "Can't tell · let the app listen",
+      warn: "This matters: a low-G string tuned up to high G will snap, and a high-G string tuned down goes floppy.",
+    },
+    listen: {
+      title: "Let the app listen",
+      lead: "Pluck string 4, then string 3. One at a time, and let each ring.",
+      start: "Start listening",
+      string: (n: number) => `String ${n}`,
+      heard: "Heard",
+      now: "Pluck it now…",
+      waiting: "Next",
+      info: "On a high-G ukulele string 4 sounds higher than string 3. On low-G and baritone it sounds lower. This works even if it is out of tune.",
+      same: "Those two sounded the same. Pluck string 4, then the string next to it (string 3).",
+      noMic: "The microphone is off, so this check is skipped. Your answers will be used.",
+      restart: "Start over",
+      privacy: "Uses the microphone. Nothing is recorded or uploaded.",
+      drawing: (n: number) => `Strings 4 to 1; string ${n} is highlighted`,
+    },
+    result: {
+      title: "Your ukulele",
+      found: "Found it",
+      check: "Check this",
+      headline: (size: string, tuning: IdentifiedTuning) =>
+        tuning === "baritone"
+          ? "Baritone"
+          : `${size ? `${size} · ` : ""}${tuning === "c-high-g" ? (size ? "high G" : "High G") : size ? "low G" : "Low G"}`,
+      tuningLine: (name: string) => `${name} ·`,
+      why: {
+        listenLook: (high: boolean) =>
+          high
+            ? "String 4 sounded higher than string 3, and you said it looks thinner. Both mean high G."
+            : "String 4 sounded lower than string 3, and you said it looks thicker. Both mean low G.",
+        listen: (high: boolean) =>
+          high
+            ? "String 4 sounded higher than string 3. That means high G."
+            : "String 4 sounded lower than string 3. That means low G.",
+        listenBaritone:
+          "String 4 sounded lower than string 3, and both sounded low. That is a baritone.",
+        look: (high: boolean) =>
+          high
+            ? "You said string 4 is thinner than string 3. That means high G."
+            : "You said string 4 is thicker than string 3. That means low G.",
+        size: "Baritone ukuleles are tuned D G B E, like the top four guitar strings.",
+        default:
+          "Most ukuleles are high G, so we picked it. If a string sounds an octave off, the tuner will warn you.",
+        conflict:
+          "What you saw and what we heard do not match. Pluck strings 4 and 3 again, or check which string is closest to your face.",
+      },
+      mapLabel: "Strings and their notes",
+      face: "Closest to your face",
+      floor: "Closest to the floor",
+      lowest: "Lowest note",
+      tip1: "Tighten a peg to raise the note, loosen it to lower the note.",
+      tip2: "Turn a little, pluck again. If the needle moves the wrong way, turn the other way.",
+      guide: "Tune it with me",
+      manual: "Not right? Pick the tuning myself",
+      again: "Listen again",
+    },
+  },
+
+  guide: {
+    title: "Guided tuning",
+    round: (n: number) => `Round ${n} of 2`,
+    step: (n: number) => `Step ${n} of 4`,
+    string: (n: number, letter: string) => `String ${n} · ${letter}`,
+    hint4: "Closest to your face. Follow it to its peg, pluck it, and turn the peg slowly.",
+    hint1: "Closest to the floor. Follow it to its peg, pluck it, and turn the peg slowly.",
+    hintMid: "Follow it to its peg, pluck it, and turn the peg slowly.",
+    wrongWayStrong: "Getting further away.",
+    wrongWay: (letter: string) => `Turn the ${letter} peg the other way.`,
+    footer: "Hold it in the green for a second and we move on.",
+    skip: "Skip string",
+    next: "Next",
+    tileString: (n: number) => `String ${n}`,
+    done: "All four strings are in tune.",
+    doneBody: "Strings stretch, so check again after a few minutes of playing.",
+    again: "Go round again",
+    finish: "Done",
+    leave: "Leave guided tuning",
   },
 
   pill: { inTune: "In tune", tighten: "Tighten", loosen: "Loosen" },
@@ -146,6 +282,7 @@ export const en = {
     reset: "Reset to defaults",
     language: "Language",
     languageAuto: "Auto",
+    findMine: "Not sure? Find my ukulele",
   },
 
   helpScreen: {
@@ -172,6 +309,8 @@ export const en = {
         body: "Allow the microphone in the address bar. On iPhone, tap Start again after returning to the app. The page needs https:// or localhost, and in-app browsers (Instagram, Facebook) often block the mic: open it in Safari or Chrome.",
       },
     ],
+    which: "Which ukulele do I have?",
+    whichBody: "A one-minute check finds your tuning: size, string 4, and a quick listen.",
     privacy: (version: string) =>
       `Private by design: audio is analysed on your device and never uploaded. Version ${version}.`,
   },

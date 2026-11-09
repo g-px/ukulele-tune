@@ -10,6 +10,17 @@ export function helpScreen(actions: Actions): HTMLElement {
     "section",
     { class: "screen help", "aria-label": S.help, style: "gap:16px" },
     titleRow(S.help, actions),
+    h(
+      "article",
+      { class: "help-card" },
+      h("h2", {}, S.helpScreen.which),
+      h("p", {}, S.helpScreen.whichBody),
+      h(
+        "button",
+        { type: "button", class: "btn-secondary", onclick: () => actions.openSetup() },
+        S.setup.label,
+      ),
+    ),
     ...S.helpScreen.sections.map((sec) =>
       h(
         "article",

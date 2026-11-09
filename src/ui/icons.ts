@@ -102,4 +102,30 @@ export const icons = {
   arrowUp: (n = 14) => icon(n, [["path", { d: "M12 20V4M5 11l7-7 7 7" }]], { stroke: 3 }),
   arrowDown: (n = 14) => icon(n, [["path", { d: "M12 4v16M5 13l7 7 7-7" }]], { stroke: 3 }),
   check: (n = 14) => icon(n, [["path", { d: "M5 12l5 5 9-10" }]], { stroke: 3 }),
+  info: (n = 18) =>
+    icon(n, [
+      ["circle", { cx: 12, cy: 12, r: 9 }],
+      ["path", { d: "M12 11v6M12 7.5v.5" }],
+    ]),
+  retry: (n = 18) =>
+    icon(
+      n,
+      [
+        ["path", { d: "M20 12a8 8 0 1 1-3-6.2" }],
+        ["path", { d: "M20 4v5h-5" }],
+      ],
+      { stroke: 2.2 },
+    ),
+  close: (n = 22) => icon(n, [["path", { d: "M6 6l12 12M18 6L6 18" }]], { stroke: 2.2 }),
+  turn: (n = 22) =>
+    icon(
+      n,
+      [
+        ["path", { d: "M4 12a8 8 0 0 1 13.7-5.7L20 9" }],
+        ["path", { d: "M20 4v5h-5" }],
+        ["path", { d: "M20 12a8 8 0 0 1-13.7 5.7L4 15" }],
+        ["path", { d: "M4 20v-5h5" }],
+      ],
+      { stroke: 2.2 },
+    ),
 };

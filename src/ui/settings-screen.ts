@@ -161,6 +161,11 @@ export function settingsScreen(store: Store<AppState>, actions: Actions): HTMLEl
       { style: "display:flex;flex-direction:column;gap:8px" },
       h("label", { class: "field-label", for: "s-tuning" }, S.tuning),
       tuning,
+      h(
+        "button",
+        { type: "button", class: "link-btn left", onclick: () => actions.openSetup() },
+        T.findMine,
+      ),
     ),
     row(T.a4, T.a4Hint, a4, "s-a4"),
     row(T.window, T.windowHint, windowSeg.el),
