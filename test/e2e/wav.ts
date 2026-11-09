@@ -28,7 +28,7 @@ export function writeSequence(name: string, segments: Segment[], sampleRate = 48
   let phase = 0;
   for (const { freq, toFreq, seconds } of segments) {
     const count = Math.floor(seconds * sampleRate);
-    const glide = Math.log2((toFreq ?? freq) / (freq || 1));
+    const glide = toFreq && freq > 0 ? Math.log2(toFreq / freq) : 0;
     for (let i = 0; i < count; i++) {
       const f = freq * 2 ** ((glide * i) / count);
       phase += (2 * Math.PI * f) / sampleRate;
