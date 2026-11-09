@@ -158,7 +158,7 @@ commit, `npm run check` green, push to `main`.
   `--string`, `--wood-1..3`; Start link, Settings link, Help card (§2, §6).
   E2E: first launch shows 8; "I know my tuning" → onboarded survives reload;
   baritone skips the look step; Skip leaves the wizard. axe on 8–11.
-- [ ] **T34 Listen step (artboard 12).** Engine wiring (§4.3, §7): chromatic
+- [x] **T34 Listen step (artboard 12).** Engine wiring (§4.3, §7): chromatic
   mode, capture slots, silence/100-cent gate before slot 3, "sounded the
   same" state, mic-off path, Start over. `writeSequence` + fixtures
   `g4-c4.wav`, `g3-c4.wav` (§9). E2E: both strings captured from each fixture.

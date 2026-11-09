@@ -28,10 +28,17 @@ import {
 import { createPitchDetector, type PitchDetector } from "./core/mpm";
 import { midiToFreq } from "./core/pitch-math";
 import { dbfs, peak, rms } from "./core/signal";
-import { EMPTY_READING, createTuner, type TunerConfig, type TunerMode } from "./core/tuner";
+import {
+  EMPTY_READING,
+  createTuner,
+  type TunerConfig,
+  type TunerMode,
+  type TunerReading,
+} from "./core/tuner";
 import { getTuning, type StringNumber } from "./core/tunings";
 import { startGuide } from "./core/guide";
 import type { Actions, AppState, Screen } from "./state/app-state";
+import { createListenSequencer } from "./state/listen";
 import {
   EMPTY_LISTEN,
   canGoNext,
@@ -88,6 +95,7 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
   /** Where a started mic lands: the tuner, or stay put (the setup listen step). */
   let micTarget: "tuner" | "stay" = "tuner";
   let setupReturn: Screen = "start";
+  const listenSeq = createListenSequencer();
   let resumeOnVisible = false;
   const tuner = createTuner(tunerConfig(store.get().settings, store.get().mode));
 
@@ -120,12 +128,22 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       level >= st.settings.gateDbfs ? detector.detect(buffer) : { frequency: 0, clarity: 0 };
     const reading = tuner.process({ ...pitch, rmsDbfs: level, timeMs: now });
     if (reading.inTune && !st.reading.inTune) navigator.vibrate?.(30);
+    if (st.setup?.step === "listen") feedListen(st.setup, reading, now);
     store.set({
       reading,
       nowMs: now,
       lastNoteMs: reading.status === "note" ? now : st.lastNoteMs,
       ...(DEBUG && frameCount % 15 === 0 ? { debugInfo: debugLine(level) } : {}),
     });
+  }
+
+  function feedListen(setup: SetupState, reading: TunerReading, now: number): void {
+    const listen = listenSeq.push(setup.listen, {
+      status: reading.status,
+      frequency: reading.frequency,
+      timeMs: now,
+    });
+    if (listen) store.set({ setup: { ...setup, listen } });
   }
 
   /** Returns true when it has started a restart and the frame should end. */
@@ -258,7 +276,10 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
     const prev = store.get().setup;
     const entering = setup.step === "listen" && prev?.step !== "listen";
     const leaving = setup.step !== "listen" && prev?.step === "listen";
-    if (entering) setMode({ kind: "chromatic" });
+    if (entering) {
+      listenSeq.reset();
+      setMode({ kind: "chromatic" });
+    }
     if (leaving) setMode({ kind: "auto" });
     store.set({ setup });
   }
@@ -410,11 +431,13 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       closeSetup(setupReturn === "setup" ? "start" : setupReturn);
     },
     setupListenStart: () => {
+      listenSeq.reset();
       const setup = store.get().setup;
       if (setup) store.set({ setup: { ...setup, listen: EMPTY_LISTEN } });
       startMicFor("stay");
     },
     setupListenRestart: () => {
+      listenSeq.reset();
       const setup = store.get().setup;
       if (setup) store.set({ setup: { ...setup, listen: EMPTY_LISTEN } });
     },

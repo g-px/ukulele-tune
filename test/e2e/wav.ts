@@ -9,16 +9,32 @@ export const FIXTURE_DIR = join(
 
 /** Sustained string-like tone as 48 kHz 16-bit mono WAV (Chromium fake mic input). */
 export function writeTone(name: string, freq: number, seconds = 4, sampleRate = 48000): string {
-  const n = Math.floor(seconds * sampleRate);
-  const data = Buffer.alloc(44 + n * 2);
+  return writeSequence(name, [{ freq, seconds }], sampleRate);
+}
+
+export interface Segment {
+  /** 0 = silence. */
+  freq: number;
+  seconds: number;
+}
+
+/** Several tones and gaps back to back in one WAV; Chromium loops the file. */
+export function writeSequence(name: string, segments: Segment[], sampleRate = 48000): string {
   const harmonics = [1, 0.5, 0.3, 0.15, 0.08];
   const total = harmonics.reduce((a, b) => a + b, 0);
-  for (let i = 0; i < n; i++) {
-    const t = i / sampleRate;
-    let v = 0;
-    harmonics.forEach((a, k) => (v += a * Math.sin(2 * Math.PI * freq * (k + 1) * t)));
-    data.writeInt16LE(Math.round((v / total) * 0.5 * 32767), 44 + i * 2);
+  const samples: number[] = [];
+  for (const { freq, seconds } of segments) {
+    const count = Math.floor(seconds * sampleRate);
+    for (let i = 0; i < count; i++) {
+      const t = i / sampleRate;
+      let v = 0;
+      harmonics.forEach((a, k) => (v += a * Math.sin(2 * Math.PI * freq * (k + 1) * t)));
+      samples.push(freq > 0 ? (v / total) * 0.5 : 0);
+    }
   }
+  const n = samples.length;
+  const data = Buffer.alloc(44 + n * 2);
+  samples.forEach((v, i) => data.writeInt16LE(Math.round(v * 32767), 44 + i * 2));
   data.write("RIFF", 0);
   data.writeUInt32LE(36 + n * 2, 4);
   data.write("WAVE", 8);
@@ -44,4 +60,26 @@ export const TONES = {
   g3: { file: "g3.wav", freq: 196 },
   /** All-zero samples: a mic path that delivers nothing. */
   silence: { file: "silence.wav", freq: 0 },
+};
+
+/** Pluck string 4 then string 3, with gaps (setup listen step). */
+export const SEQUENCES = {
+  highG: {
+    file: "g4-c4.wav",
+    segments: [
+      { freq: 392, seconds: 1.5 },
+      { freq: 0, seconds: 0.5 },
+      { freq: 261.63, seconds: 1.5 },
+      { freq: 0, seconds: 0.5 },
+    ],
+  },
+  lowG: {
+    file: "g3-c4.wav",
+    segments: [
+      { freq: 196, seconds: 1.5 },
+      { freq: 0, seconds: 0.5 },
+      { freq: 261.63, seconds: 1.5 },
+      { freq: 0, seconds: 0.5 },
+    ],
+  },
 };
