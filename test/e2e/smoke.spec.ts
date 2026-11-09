@@ -1,6 +1,6 @@
 import { chromium, expect, test, type Browser, type Page } from "@playwright/test";
 import { join } from "node:path";
-import { FIXTURE_DIR, TONES } from "./wav";
+import { FIXTURE_DIR, TONES, WRONG_WAY } from "./wav";
 
 /** Launch Chromium with a WAV file as the microphone. */
 async function withMic(
@@ -129,5 +129,32 @@ test("a mic that sends only zeros falls back, then says so", async ({ baseURL })
     },
     baseURL ?? "",
     "?debug",
+  );
+});
+
+test("locked on G, a note drifting away says to turn the other way", async ({ baseURL }) => {
+  await withMic(
+    WRONG_WAY.file,
+    async (page) => {
+      await page.getByRole("button", { name: "Start tuner" }).click();
+      await page.getByRole("button", { name: /^G ?4 ·/ }).click();
+      await expect(page.locator(".wrong-way")).toBeVisible({ timeout: 6000 });
+      await expect(page.locator(".wrong-way")).toContainText("Turn the G peg the other way.");
+    },
+    baseURL ?? "",
+  );
+});
+
+test("a steady in-tune note never shows the wrong-way hint", async ({ baseURL }) => {
+  await withMic(
+    TONES.g4.file,
+    async (page) => {
+      await page.getByRole("button", { name: "Start tuner" }).click();
+      await page.getByRole("button", { name: /^G ?4 ·/ }).click();
+      await expect(page.locator(".pill")).toHaveText("In tune", { timeout: 5000 });
+      await page.waitForTimeout(2000);
+      await expect(page.locator(".wrong-way")).toBeHidden();
+    },
+    baseURL ?? "",
   );
 });

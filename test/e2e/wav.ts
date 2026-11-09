@@ -15,6 +15,8 @@ export function writeTone(name: string, freq: number, seconds = 4, sampleRate = 
 export interface Segment {
   /** 0 = silence. */
   freq: number;
+  /** Glide linearly in cents from `freq` to this by the end of the segment. */
+  toFreq?: number;
   seconds: number;
 }
 
@@ -23,12 +25,15 @@ export function writeSequence(name: string, segments: Segment[], sampleRate = 48
   const harmonics = [1, 0.5, 0.3, 0.15, 0.08];
   const total = harmonics.reduce((a, b) => a + b, 0);
   const samples: number[] = [];
-  for (const { freq, seconds } of segments) {
+  let phase = 0;
+  for (const { freq, toFreq, seconds } of segments) {
     const count = Math.floor(seconds * sampleRate);
+    const glide = Math.log2((toFreq ?? freq) / (freq || 1));
     for (let i = 0; i < count; i++) {
-      const t = i / sampleRate;
+      const f = freq * 2 ** ((glide * i) / count);
+      phase += (2 * Math.PI * f) / sampleRate;
       let v = 0;
-      harmonics.forEach((a, k) => (v += a * Math.sin(2 * Math.PI * freq * (k + 1) * t)));
+      harmonics.forEach((a, k) => (v += a * Math.sin(phase * (k + 1))));
       samples.push(freq > 0 ? (v / total) * 0.5 : 0);
     }
   }
@@ -60,6 +65,15 @@ export const TONES = {
   g3: { file: "g3.wav", freq: 196 },
   /** All-zero samples: a mic path that delivers nothing. */
   silence: { file: "silence.wav", freq: 0 },
+};
+
+/** G4 drifting from 20 to 70 cents flat: a peg turned the wrong way. */
+export const WRONG_WAY = {
+  file: "g4-drift.wav",
+  segments: [
+    { freq: 392 * 2 ** (-20 / 1200), seconds: 0.4 },
+    { freq: 392 * 2 ** (-20 / 1200), toFreq: 392 * 2 ** (-70 / 1200), seconds: 1.6 },
+  ],
 };
 
 /** Pluck string 4 then string 3, with gaps (setup listen step). */

@@ -275,7 +275,8 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
     setHidden(modeRow, g.visible);
     setHidden(guideCard, !g.visible);
     setHidden(guideFooter, !g.visible || g.done);
-    setHidden(wrongWay, !g.visible || !st.wrongWay);
+    setHidden(wrongWay, !st.wrongWay);
+    if (st.wrongWay) setText(wrongWayText, S.guide.wrongWay(currentLetter(st)));
     if (!g.visible) return;
     setText(guideRound, g.round);
     setClass(guideCard, "is-done", g.done);
@@ -285,8 +286,6 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
     setText(guideTitle, g.title);
     setText(guideHint, g.done ? S.guide.doneBody : g.hint);
     setHidden(guideButtons, !g.done);
-    const n = st.guide ? currentLetter(st) : "";
-    setText(wrongWayText, S.guide.wrongWay(n));
   }
 
   store.subscribe((st, prev) => render(st, prev));

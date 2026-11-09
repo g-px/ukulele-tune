@@ -171,7 +171,7 @@ commit, `npm run check` green, push to `main`.
   counter, Skip string, done card (Go round again / Done), × leaves to auto
   mode, vibrate on advance. E2E with `g4.wav`: string 4 completes, coach moves
   to string 3. axe.
-- [ ] **T37 Wrong-way hint.** Wire the detector in guided and manual mode,
+- [x] **T37 Wrong-way hint.** Wire the detector in guided and manual mode,
   alert card for 4 s (`WRONG_WAY_SHOW_MS`), copy per §8. Unit tests cover the
   logic; e2e only checks the card is absent on a steady in-tune tone.
 - [ ] **T38 pt-BR for M5 + solfège in guidance.** Every §8 key in `pt-BR.ts`,

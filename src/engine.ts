@@ -17,6 +17,9 @@ import {
   ATTACK_SKIP_MS,
   CLARITY_THRESHOLD,
   GUIDE_HOLD_MS,
+  WRONG_WAY_GROW_CENTS,
+  WRONG_WAY_SHOW_MS,
+  WRONG_WAY_WINDOW_MS,
   EMA_ALPHA,
   HIGHPASS_HZ,
   HOLD_MS,
@@ -27,6 +30,7 @@ import {
   MIN_FREQ,
 } from "./config";
 import { createPitchDetector, type PitchDetector } from "./core/mpm";
+import { createWrongWayDetector } from "./core/wrong-way";
 import { midiToFreq } from "./core/pitch-math";
 import { dbfs, peak, rms } from "./core/signal";
 import {
@@ -103,6 +107,11 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
   let micTarget: "tuner" | "stay" = "tuner";
   let setupReturn: Screen = "start";
   const listenSeq = createListenSequencer();
+  const wrongWayDetector = createWrongWayDetector({
+    windowMs: WRONG_WAY_WINDOW_MS,
+    growCents: WRONG_WAY_GROW_CENTS,
+  });
+  let wrongWayUntil = 0;
   let resumeOnVisible = false;
   const tuner = createTuner(tunerConfig(store.get().settings, store.get().mode));
 
@@ -136,6 +145,8 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
     const reading = tuner.process({ ...pitch, rmsDbfs: level, timeMs: now });
     if (reading.inTune && !st.reading.inTune) navigator.vibrate?.(30);
     if (st.setup?.step === "listen") feedListen(st.setup, reading, now);
+    const wrongWay = watchWrongWay(st, reading, now);
+    if (wrongWay !== st.wrongWay) store.set({ wrongWay });
     if (st.guide && !st.guide.done) {
       const next = stepGuide(
         st.guide,
@@ -153,6 +164,22 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
       lastNoteMs: reading.status === "note" ? now : st.lastNoteMs,
       ...(DEBUG && frameCount % 15 === 0 ? { debugInfo: debugLine(level) } : {}),
     });
+  }
+
+  /** Guided tuning and manual lock: is the note moving away from its target? */
+  function watchWrongWay(st: AppState, reading: TunerReading, now: number): boolean {
+    const watching = (st.guide !== null && !st.guide.done) || st.mode.kind === "manual";
+    if (!watching) return false;
+    const fired = wrongWayDetector.push({
+      cents: reading.cents,
+      noteActive: reading.status === "note",
+      inTune: reading.inTune,
+      attack: reading.attack,
+      timeMs: now,
+    });
+    if (fired) wrongWayUntil = now + WRONG_WAY_SHOW_MS;
+    if (reading.inTune) wrongWayUntil = 0;
+    return now < wrongWayUntil;
   }
 
   function feedListen(setup: SetupState, reading: TunerReading, now: number): void {
@@ -355,7 +382,9 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
 
   function setMode(mode: TunerMode): void {
     tuner.update({ mode });
-    store.set({ mode, reading: EMPTY_READING });
+    wrongWayDetector.reset();
+    wrongWayUntil = 0;
+    store.set({ mode, reading: EMPTY_READING, wrongWay: false });
   }
 
   function applySettings(next: Settings, prev: Settings): void {
