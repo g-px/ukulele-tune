@@ -1,7 +1,7 @@
 /** Pure view-model functions: AppState -> what each widget shows. */
 import { midiToFreq, noteName, prettyAccidentals } from "../core/pitch-math";
 import { getTuning, type StringNumber } from "../core/tunings";
-import { S } from "../strings";
+import { S, tuningName } from "../strings";
 import type { AppState } from "./app-state";
 
 export const NO_SIGNAL_MS = 10_000;
@@ -68,9 +68,9 @@ export function needleState(st: AppState): "idle" | "in" | "out" {
 }
 
 export function needleLabel(st: AppState): string {
-  if (!hasReading(st)) return "No note detected";
+  if (!hasReading(st)) return S.a11y.noNote;
   const v = noteView(st);
-  return `${v.label}, ${v.cents.replace("¢", "cents")}`;
+  return `${v.label}, ${v.cents.replace("¢", S.a11y.cents)}`;
 }
 
 function letterOf(label: string): string {
@@ -99,8 +99,7 @@ export function statusMessage(st: AppState): string {
 export function announcement(st: AppState): string {
   if (!hasReading(st) || st.reading.stale) return "";
   const pill = pillFor(st);
-  const action = pill === "in" ? "in tune" : pill === "tighten" ? "tighten" : "loosen";
-  return S.announce(prettyAccidentals(st.reading.noteLabel), st.reading.cents, action);
+  return S.announce(prettyAccidentals(st.reading.noteLabel), st.reading.cents, pill ?? "in");
 }
 
 export interface StringView {
@@ -158,7 +157,7 @@ export function octaveView(st: AppState): OctaveView {
     visible: true,
     title: low ? S.octave.low : S.octave.high,
     body: low ? S.octave.lowBody(note) : S.octave.highBody(note),
-    switchLabel: partner ? S.octave.switchTo(partner.name) : null,
+    switchLabel: partner ? S.octave.switchTo(tuningName(partner.id)) : null,
     switchTo: partner ? partner.id : null,
   };
 }

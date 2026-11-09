@@ -11,7 +11,7 @@ import {
 } from "../state/derive";
 import type { Store } from "../state/store";
 import { ANNOUNCE_INTERVAL_MS } from "../config";
-import { S } from "../strings";
+import { S, tuningName } from "../strings";
 import { h, setAttr, setClass, setHidden, setText } from "./dom";
 import { appHeader } from "./header";
 import { icons } from "./icons";
@@ -28,7 +28,7 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
       onchange: (e: Event) =>
         actions.updateSettings({ tuningId: (e.target as HTMLSelectElement).value }),
     },
-    ...TUNINGS.map((t) => h("option", { value: t.id }, `${t.name} · ${t.short}`)),
+    ...TUNINGS.map((t) => h("option", { value: t.id }, `${tuningName(t.id)} · ${t.short}`)),
   );
   const badge = h("button", {
     type: "button",
@@ -74,7 +74,7 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
 
   const el = h(
     "section",
-    { class: "screen tuner", "aria-label": "Tuner" },
+    { class: "screen tuner", "aria-label": S.a11y.tuner },
     appHeader(actions),
     h(
       "div",
@@ -90,7 +90,12 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
     h(
       "div",
       { class: "mode-row" },
-      h("div", { class: "segmented", role: "group", "aria-label": "Mode" }, autoBtn, chromaticBtn),
+      h(
+        "div",
+        { class: "segmented", role: "group", "aria-label": S.a11y.mode },
+        autoBtn,
+        chromaticBtn,
+      ),
       lockNote,
     ),
     h(
@@ -105,7 +110,7 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
           {
             class: "level-bar",
             role: "meter",
-            "aria-label": "Microphone level",
+            "aria-label": S.a11y.micLevel,
             "aria-valuemin": 0,
             "aria-valuemax": 100,
             "aria-valuenow": 0,

@@ -16,7 +16,7 @@ interface Column {
 }
 
 export function createStringsPanel(actions: Actions) {
-  const el = h("div", { class: "strings", role: "group", "aria-label": "Strings" });
+  const el = h("div", { class: "strings", role: "group", "aria-label": S.a11y.strings });
   let columns: Column[] = [];
   let signature = "";
 

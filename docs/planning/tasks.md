@@ -134,7 +134,7 @@ commit, `npm run check` green, push to `main`.
 
 - [x] **T28 Plan.** Knowledge doc 08, `beginner-setup.md`, artboards 8–15 on
   the canvas, decisions 15–18, this task list.
-- [ ] **T29 i18n foundation + pt-BR for v1.** §5 and §4.8: move strings to
+- [x] **T29 i18n foundation + pt-BR for v1.** §5 and §4.8: move strings to
   `src/i18n/en.ts`, `Strings` type, `src/i18n/pt-BR.ts` with every v1 string
   translated (glossary in knowledge 08), `S` live binding + `setLocale`,
   `resolveLocale` + tests, `language` setting + sanitize tests, Settings

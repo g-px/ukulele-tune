@@ -249,6 +249,11 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
 
   function applySettings(next: Settings, prev: Settings): void {
     saveSettings(storage, next);
+    if (next.language !== prev.language) {
+      // Every screen is built with the old locale's strings; a reload rebuilds them.
+      location.reload();
+      return;
+    }
     let mode = store.get().mode;
     if (next.tuningId !== prev.tuningId) {
       mode = { kind: "auto" };

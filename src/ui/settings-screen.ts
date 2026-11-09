@@ -3,11 +3,9 @@ import { TUNINGS } from "../core/tunings";
 import type { Actions, AppState } from "../state/app-state";
 import type { Settings } from "../state/settings";
 import type { Store } from "../state/store";
-import { S } from "../strings";
+import { S, tuningName } from "../strings";
 import { h, setAttr, setText } from "./dom";
 import { titleRow } from "./header";
-
-const T = S.settingsScreen;
 
 function segmented<V extends string | number | boolean>(
   label: string,
@@ -43,6 +41,7 @@ function row(label: string, hint: string | null, control: Node, forId?: string):
 }
 
 export function settingsScreen(store: Store<AppState>, actions: Actions): HTMLElement {
+  const T = S.settingsScreen;
   const set = (patch: Partial<Settings>) => actions.updateSettings(patch);
 
   const tuning = h(
@@ -52,7 +51,7 @@ export function settingsScreen(store: Store<AppState>, actions: Actions): HTMLEl
       class: "select",
       onchange: (e: Event) => set({ tuningId: (e.target as HTMLSelectElement).value }),
     },
-    ...TUNINGS.map((t) => h("option", { value: t.id }, `${t.name} · ${t.short}`)),
+    ...TUNINGS.map((t) => h("option", { value: t.id }, `${tuningName(t.id)} · ${t.short}`)),
   );
 
   const a4Input = h("input", {
@@ -124,6 +123,17 @@ export function settingsScreen(store: Store<AppState>, actions: Actions): HTMLEl
     ],
     (v) => set({ theme: v }),
   );
+  const languageSeg = segmented<Settings["language"]>(
+    T.language,
+    [
+      ["auto", T.languageAuto],
+      ["en", "English"],
+      ["pt-BR", "Português"],
+    ],
+    (v) => set({ language: v }),
+  );
+  languageSeg.el.children[1]?.setAttribute("lang", "en");
+  languageSeg.el.children[2]?.setAttribute("lang", "pt-BR");
   const bufferSeg = segmented<Settings["bufferSize"]>(
     T.bufferSize,
     [
@@ -157,6 +167,7 @@ export function settingsScreen(store: Store<AppState>, actions: Actions): HTMLEl
     row(T.names, null, namesSeg.el),
     row(T.left, T.leftHint, left, "s-left"),
     row(T.theme, null, themeSeg.el),
+    row(T.language, null, languageSeg.el),
     h("h2", { class: "section-label" }, T.advanced),
     row(T.bufferSize, T.bufferHint, bufferSeg.el),
     h(
@@ -187,6 +198,7 @@ export function settingsScreen(store: Store<AppState>, actions: Actions): HTMLEl
     namesSeg.update(s.flats);
     left.checked = s.leftHanded;
     themeSeg.update(s.theme);
+    languageSeg.update(s.language);
     bufferSeg.update(s.bufferSize);
     if (gate.value !== String(s.gateDbfs)) gate.value = String(s.gateDbfs);
     setText(gateValue, `${s.gateDbfs < 0 ? "−" : ""}${Math.abs(s.gateDbfs)} dB`);

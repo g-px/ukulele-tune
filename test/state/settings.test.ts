@@ -36,6 +36,13 @@ describe("settings", () => {
     expect(loadSettings(s)).toEqual(custom);
   });
 
+  it("keeps a valid language and repairs an unknown one", () => {
+    expect(sanitizeSettings({ language: "pt-BR" }).language).toBe("pt-BR");
+    expect(sanitizeSettings({ language: "en" }).language).toBe("en");
+    expect(sanitizeSettings({ language: "fr" }).language).toBe("auto");
+    expect(sanitizeSettings({}).language).toBe("auto");
+  });
+
   it("repairs bad values field by field", () => {
     const fixed = sanitizeSettings({
       tuningId: "banjo",

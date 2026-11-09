@@ -23,7 +23,9 @@ Read first: `docs/planning/design.md` (what to build, signatures, tests) and
 - Frequencies are never hard-coded in app code; derive from MIDI numbers and
   the A4 setting via `core/pitch-math.ts`.
 - Never hard-code the sample rate; use `AudioContext.sampleRate`.
-- All user-facing text lives in `src/strings.ts`.
+- All user-facing text lives in `src/i18n/` (`en.ts` is the reference; every
+  key also goes in `pt-BR.ts`). Read it through `S` from `src/strings.ts`,
+  never capture `S.*` at module level (the locale is set before mount).
 - Keep the production bundle small (target < 100 kB gzipped). No UI framework.
 - Match existing formatting (Prettier). Short functions, descriptive names,
   comments only where the reason is not obvious from the code.

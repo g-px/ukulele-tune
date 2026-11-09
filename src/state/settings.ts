@@ -10,6 +10,7 @@ import {
   type BufferSize,
 } from "../config";
 import { DEFAULT_TUNING_ID, findTuning } from "../core/tunings";
+import { LANGUAGE_PREFS, type LanguagePref } from "./locale";
 
 export type Theme = "system" | "light" | "dark";
 
@@ -22,6 +23,7 @@ export interface Settings {
   theme: Theme;
   bufferSize: BufferSize;
   gateDbfs: number;
+  language: LanguagePref;
 }
 
 export const DEFAULT_SETTINGS: Readonly<Settings> = {
@@ -33,6 +35,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = {
   theme: "system",
   bufferSize: DEFAULT_BUFFER_SIZE,
   gateDbfs: DEFAULT_GATE_DBFS,
+  language: "auto",
 };
 
 export const STORAGE_KEY = "ukulele-tune.settings.v1";
@@ -64,6 +67,9 @@ export function sanitizeSettings(raw: unknown): Settings {
       ? (r.bufferSize as BufferSize)
       : d.bufferSize,
     gateDbfs: clampInt(r.gateDbfs, GATE_MIN_DBFS, GATE_MAX_DBFS, d.gateDbfs),
+    language: LANGUAGE_PREFS.includes(r.language as LanguagePref)
+      ? (r.language as LanguagePref)
+      : d.language,
   };
 }
 
