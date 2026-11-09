@@ -123,3 +123,54 @@ test("the listen step hears a low G", async ({ baseURL }) => {
     baseURL ?? "",
   );
 });
+
+test("full wizard → Concert · high G, then the tuner uses it", async ({ baseURL }) => {
+  await withMic(
+    SEQUENCES.highG.file,
+    async (page) => {
+      await toListenStep(page, /^Concert/, /^Thinner/);
+      await expect(page.getByRole("button", { name: "Next" })).toBeEnabled({ timeout: 8000 });
+      await page.getByRole("button", { name: "Next" }).click();
+      await expect(page.getByRole("heading", { name: "Concert · high G" })).toBeVisible();
+      await expect(page.getByText("Found it")).toBeVisible();
+      await expect(page.getByText("Both mean high G.")).toBeVisible();
+      await expect(page.locator(".string-map li")).toHaveCount(4);
+      await page.getByRole("button", { name: "Tune it with me" }).click();
+      await expect(page.locator(".tuner")).toBeVisible();
+      await expect(page.locator(".tuning-row select")).toHaveValue("c-high-g");
+    },
+    baseURL ?? "",
+  );
+});
+
+test("full wizard with unknown answers → low G from listening", async ({ baseURL }) => {
+  await withMic(
+    SEQUENCES.lowG.file,
+    async (page) => {
+      await toListenStep(page, /^Not sure/, /^Can't tell/);
+      await expect(page.getByRole("button", { name: "Next" })).toBeEnabled({ timeout: 8000 });
+      await page.getByRole("button", { name: "Next" }).click();
+      await expect(page.getByRole("heading", { name: "Low G" })).toBeVisible();
+      await expect(page.getByText("String 4 sounded lower than string 3.")).toBeVisible();
+      await page.getByRole("button", { name: "Not right? Pick the tuning myself" }).click();
+      await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+      await expect(page.locator("#s-tuning")).toHaveValue("c-low-g");
+    },
+    baseURL ?? "",
+  );
+});
+
+test("a thin-looking string that sounds low shows the mismatch", async ({ baseURL }) => {
+  await withMic(
+    SEQUENCES.lowG.file,
+    async (page) => {
+      await toListenStep(page, /^Tenor/, /^Thinner/);
+      await expect(page.getByRole("button", { name: "Next" })).toBeEnabled({ timeout: 8000 });
+      await page.getByRole("button", { name: "Next" }).click();
+      await expect(page.getByText("Check this")).toBeVisible();
+      await page.getByRole("button", { name: "Listen again" }).click();
+      await expect(page.getByRole("heading", { name: "Let the app listen" })).toBeVisible();
+    },
+    baseURL ?? "",
+  );
+});

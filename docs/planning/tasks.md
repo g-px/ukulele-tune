@@ -162,7 +162,7 @@ commit, `npm run check` green, push to `main`.
   mode, capture slots, silence/100-cent gate before slot 3, "sounded the
   same" state, mic-off path, Start over. `writeSequence` + fixtures
   `g4-c4.wav`, `g3-c4.wav` (§9). E2E: both strings captured from each fixture.
-- [ ] **T35 Result (artboard 13).** Headline, explanation by basis/conflict,
+- [x] **T35 Result (artboard 13).** Headline, explanation by basis/conflict,
   string map from the tuning, tips, conflict variant with Listen again;
   "Tune it with me" saves `tuningId`/`ukuleleSize`/`onboarded`; "Pick the
   tuning myself" opens Settings. E2E: full wizard → high G (`g4-c4.wav`) and
