@@ -4,10 +4,20 @@ A ukulele tuner that runs entirely in your browser. Pluck a string, and the
 app tells you which string it hears, how many cents it is off, and whether to
 tighten or loosen the peg. Audio never leaves your device.
 
-**Live app:** https://g-px.github.io/ukulele-tune/ (once GitHub Pages is enabled; see Deploy below)
+**Live app:** https://g-px.github.io/ukulele-tune/
 
 ## Features
 
+- **Beginner setup** on first launch (and any time from Start, Settings or
+  Help): how to hold the ukulele and which string is which, its size, whether
+  string 4 is thin or thick, then a quick listen to strings 4 and 3. The app
+  picks high G, low G or baritone, shows a map of the strings and saves the
+  tuning.
+- **Guided tuning**: strings 4 to 1, twice round, moving on once each string
+  holds in tune, with a "turn the other way" hint when the note drifts away
+  from the target.
+- **English and Brazilian Portuguese**, chosen from the browser or in
+  Settings; solfège (Dó Ré Mi) alongside letters in Portuguese guidance.
 - Microphone tuner using the McLeod pitch method, accurate to well under one cent.
 - Auto string detection, tap a string to lock onto it, or chromatic mode for any note.
 - Warns when a string sounds an octave off (the classic high-G / low-G mix-up)
@@ -65,8 +75,11 @@ standalone file.
 
 ```
 src/core/    pure TypeScript: pitch maths, tunings, FFT, McLeod detector,
-             smoothing, string selection, tuner state machine, dial geometry
-src/state/   store, persisted settings, app state, pure view-model functions
+             smoothing, string selection, tuner state machine, dial geometry,
+             tuning identification, stable capture, guided tuning, wrong-way hint
+src/state/   store, persisted settings, app state, setup wizard, locale,
+             pure view-model functions
+src/i18n/    copy: en.ts (reference) and pt-BR.ts, typed against it
 src/audio/   AudioContext, microphone graph, reference tones, error mapping
 src/ui/      DOM components for each screen (no framework)
 src/engine.ts  per-frame loop: mic → detector → tuner → store
@@ -77,10 +90,11 @@ fully unit-tested. Details:
 
 - [Technical design](docs/planning/design.md)
 - [UI specification](docs/planning/ui-spec.md), from the [design canvas](https://claude.ai/artifact/313FtAS9NZPtWQ6VagKK7g)
+- [Beginner setup, guided tuning and pt-BR](docs/planning/beginner-setup.md)
 - [Task plan](docs/planning/tasks.md) and [decisions](docs/planning/decisions.md)
 - [Knowledge base](docs/knowledge/): ukulele background, every tuning with
   frequencies, tuning technique, pitch maths, pitch detection, Web Audio
-  platform notes, tuner UX, sources.
+  platform notes, tuner UX, helping beginners (with a pt-BR glossary), sources.
 
 ## Deploy
 

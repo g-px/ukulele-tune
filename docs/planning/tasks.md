@@ -179,7 +179,7 @@ commit, `npm run check` green, push to `main`.
   sentences (artboard 15). E2E: setup steps 8–13 and guided tuning in pt-BR
   have no horizontal overflow; axe in pt-BR. Owner (native speaker) reviews
   the pt-BR copy before this is ticked.
-- [ ] **T39 Docs refresh.** README (beginner setup, languages), Help copy
+- [x] **T39 Docs refresh.** README (beginner setup, languages), Help copy
   mentions the setup, `CLAUDE.md` status line, decisions if anything changed
   while implementing.
 

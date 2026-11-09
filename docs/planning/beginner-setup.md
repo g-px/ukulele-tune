@@ -166,9 +166,9 @@ active slot.
 ### 4.4 `src/core/guide.ts`
 
 ```ts
+export const GUIDE_ORDER: readonly StringNumber[]; // [4, 3, 2, 1]
 export interface GuideState {
-  order: readonly StringNumber[]; // [4, 3, 2, 1]
-  index: number;                  // 0..3
+  index: number;                  // 0..3 into GUIDE_ORDER
   round: 1 | 2;
   inTuneSinceMs: number | null;
   done: boolean;
@@ -210,7 +210,8 @@ samples are non-decreasing within 3 cents of noise. App values:
 `windowMs = 800`, `growCents = 15`. The UI keeps the hint 4 s after the last true
 (`WRONG_WAY_SHOW_MS = 4000`). Only active in guided tuning and manual mode.
 
-Tests: −20, −25, −30, −36 over 900 ms → true at the last; the reverse order → false;
+Tests: −20, −25, −30, −36 over 700 ms → true at the last (spread over
+900 ms the first sample falls out of the 800 ms window); the reverse order → false;
 ±3 cents noise around −20 for 2 s → false; an `attack` between samples → false;
 `inTune` frame resets.
 

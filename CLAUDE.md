@@ -33,8 +33,7 @@ Read first: `docs/planning/design.md` (what to build, signatures, tests) and
 ## Commands
 `npm run dev` · `npm run check` · `npm run build` · `npm run build:standalone` · `npm run e2e`
 
-v1 (T01–T27) is done. Milestone M5 (beginner setup, guided tuning, pt-BR)
-is planned in `docs/planning/beginner-setup.md`, tasks T29–T39. New work
-outside it: add a task to `tasks.md` first, then follow the same rules.
-User-facing text: every locale file in `src/i18n/` gets the key (see
-`beginner-setup.md` §5) once T29 lands.
+v1 (T01–T27) and M5 (beginner setup, guided tuning, pt-BR; T28–T39, spec in
+`docs/planning/beginner-setup.md`) are done; T38 waits only for the owner's
+review of the pt-BR copy. New work: add a task to `tasks.md` first, then
+follow the same rules.
