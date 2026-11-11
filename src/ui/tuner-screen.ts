@@ -222,6 +222,7 @@ export function tunerScreen(store: Store<AppState>, actions: Actions): HTMLEleme
       stale: v.stale,
       inTuneCents: s.inTuneCents,
       label: needleLabel(st),
+      timeMs: st.nowMs,
     });
     strings.update(stringViews(st));
 

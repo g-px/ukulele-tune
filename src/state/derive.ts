@@ -52,7 +52,7 @@ export function noteView(st: AppState): NoteView {
   if (hasReading(st)) {
     return {
       label: prettyAccidentals(st.reading.noteLabel),
-      cents: formatCents(st.reading.cents),
+      cents: formatCents(st.reading.shownCents),
       pill: pillFor(st),
       idle: false,
       stale: st.reading.stale,

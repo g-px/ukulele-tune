@@ -158,3 +158,40 @@ test("a steady in-tune note never shows the wrong-way hint", async ({ baseURL })
     baseURL ?? "",
   );
 });
+
+test("the needle glides to the reading and then holds still", async ({ baseURL }) => {
+  await withMic(
+    TONES.e4flat.file,
+    async (page) => {
+      await page.getByRole("button", { name: "Start tuner" }).click();
+      await page.getByRole("button", { name: /^E ?4 ·/ }).click();
+      // Sample the hand's angle on every animation frame for two seconds.
+      const angles = await page.evaluate(
+        () =>
+          new Promise<number[]>((resolve) => {
+            const hand = document.querySelector<SVGElement>(".needle .hand");
+            const out: number[] = [];
+            const start = performance.now();
+            const sample = (now: number) => {
+              out.push(
+                Number(/rotate\(([-\d.]+)deg\)/.exec(hand?.style.transform ?? "")?.[1] ?? 0),
+              );
+              if (now - start < 2000) requestAnimationFrame(sample);
+              else resolve(out);
+            };
+            requestAnimationFrame(sample);
+          }),
+      );
+      // −23 cents is −20.7° on the dial.
+      const settled = angles.slice(-20);
+      expect(Math.min(...settled)).toBeGreaterThan(-21.7);
+      expect(Math.max(...settled)).toBeLessThan(-19.7);
+      expect(Math.max(...settled) - Math.min(...settled)).toBeLessThan(0.5);
+      // It travelled there through intermediate positions instead of jumping.
+      const onTheWay = new Set(angles.filter((a) => a < -2 && a > -18));
+      expect(onTheWay.size).toBeGreaterThanOrEqual(3);
+      await expect(page.locator(".pill")).toHaveText("Tighten");
+    },
+    baseURL ?? "",
+  );
+});

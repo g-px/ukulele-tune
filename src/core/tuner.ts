@@ -2,8 +2,8 @@
  * Pure per-frame tuner logic: gating, smoothing, string matching and the
  * in-tune / hold rules. Input is one detector result per animation frame.
  */
-import { centsBetween, centsToNearest, midiToFreq, noteName } from "./pitch-math";
-import { Ema, MedianFilter } from "./smoothing";
+import { centsToNearest, midiToFreq, noteName } from "./pitch-math";
+import { MedianFilter, PitchFilter, StickyRound, type PitchFilterOptions } from "./smoothing";
 import { matchString, nearestString, type OctaveHint } from "./string-select";
 import type { StringNumber, Tuning } from "./tunings";
 
@@ -19,8 +19,14 @@ export interface TunerConfig {
   clarityThreshold: number;
   gateDbfs: number;
   medianSize: number;
-  emaAlpha: number;
-  inTuneHoldFrames: number;
+  filter: PitchFilterOptions;
+  /** In tune once the note has stayed inside the window this long. */
+  inTuneEnterMs: number;
+  /** In tune ends once the note has stayed outside window × exit factor this long. */
+  inTuneExitMs: number;
+  inTuneExitFactor: number;
+  /** How far past a half the cents must go before the displayed whole number changes. */
+  centsStickiness: number;
   holdMs: number;
   /** Ignore this long after the level jumps (pluck attack). 0 disables. */
   attackSkipMs: number;
@@ -45,7 +51,10 @@ export interface TunerReading {
   targetHz: number;
   /** Signed and unclamped. */
   cents: number;
+  /** Whole cents for the read-out; steadier than rounding `cents` every frame. */
+  shownCents: number;
   direction: Direction;
+  /** Latched: needs a steady moment inside the window, and a clear exit to end. */
   inTune: boolean;
   stringNumber: StringNumber | null;
   octaveHint: OctaveHint;
@@ -64,6 +73,7 @@ export const EMPTY_READING: TunerReading = {
   noteLabel: "",
   targetHz: 0,
   cents: 0,
+  shownCents: 0,
   direction: "none",
   inTune: false,
   stringNumber: null,
@@ -73,8 +83,11 @@ export const EMPTY_READING: TunerReading = {
   attack: false,
 };
 
-/** Smoothed pitch jumping more than this resets the EMA (new string plucked). */
+/** Pitch jumping more than this from the smoothed value starts a new note. */
 const JUMP_RESET_CENTS = 50;
+
+const toCents = (hz: number) => 1200 * Math.log2(hz);
+const toHz = (cents: number) => 2 ** (cents / 1200);
 
 export function levelFromDbfs(dbfs: number): number {
   if (!Number.isFinite(dbfs)) return 0;
@@ -84,8 +97,11 @@ export function levelFromDbfs(dbfs: number): number {
 export function createTuner(initial: TunerConfig) {
   let config = { ...initial };
   let median = new MedianFilter(config.medianSize);
-  let ema = new Ema(config.emaAlpha);
-  let inTuneCount = 0;
+  let filter = new PitchFilter(config.filter);
+  let shown = new StickyRound(config.centsStickiness);
+  let inTune = false;
+  let insideSince: number | null = null;
+  let outsideSince: number | null = null;
   let last: TunerReading | null = null;
   let lastGoodMs = -Infinity;
   let prevDbfs = -Infinity;
@@ -93,12 +109,46 @@ export function createTuner(initial: TunerConfig) {
 
   function reset(): void {
     median = new MedianFilter(config.medianSize);
-    ema = new Ema(config.emaAlpha);
-    inTuneCount = 0;
+    filter = new PitchFilter(config.filter);
+    shown = new StickyRound(config.centsStickiness);
+    newNote();
     last = null;
     lastGoodMs = -Infinity;
     prevDbfs = -Infinity;
     attackUntil = -Infinity;
+  }
+
+  function newNote(): void {
+    filter.reset();
+    shown.reset();
+    inTune = false;
+    insideSince = null;
+    outsideSince = null;
+  }
+
+  /** Schmitt trigger in time: steady inside the window to enter, clearly outside to leave. */
+  function latchInTune(absCents: number, timeMs: number): void {
+    if (!inTune) {
+      if (absCents > config.inTuneCents) {
+        insideSince = null;
+        return;
+      }
+      insideSince ??= timeMs;
+      if (timeMs - insideSince >= config.inTuneEnterMs) {
+        inTune = true;
+        outsideSince = null;
+      }
+      return;
+    }
+    if (absCents <= config.inTuneCents * config.inTuneExitFactor) {
+      outsideSince = null;
+      return;
+    }
+    outsideSince ??= timeMs;
+    if (timeMs - outsideSince >= config.inTuneExitMs) {
+      inTune = false;
+      insideSince = null;
+    }
   }
 
   function update(patch: Partial<TunerConfig>): void {
@@ -137,15 +187,14 @@ export function createTuner(initial: TunerConfig) {
   }
 
   function held(status: "silent" | "noisy", level: number, timeMs: number): TunerReading {
-    inTuneCount = 0;
     if (last && timeMs - lastGoodMs < config.holdMs) {
-      return { ...last, status, level, inTune: false, stale: true };
+      return { ...last, status, level, stale: true };
     }
     if (last) {
       // The note has gone; start the next one from clean filters.
       last = null;
       median.reset();
-      ema.reset();
+      newNote();
     }
     return { ...EMPTY_READING, status, level };
   }
@@ -155,6 +204,11 @@ export function createTuner(initial: TunerConfig) {
     prevDbfs = frame.rmsDbfs;
     const attack = Number.isFinite(jump) && jump > config.attackJumpDb;
     if (attack && config.attackSkipMs > 0) attackUntil = frame.timeMs + config.attackSkipMs;
+    if (attack) {
+      // A new pluck may land on a different pitch (the peg was turned): re-acquire at once.
+      median.reset();
+      filter.loosen();
+    }
     const reading = read(frame);
     return reading.attack === attack ? reading : { ...reading, attack };
   }
@@ -168,14 +222,14 @@ export function createTuner(initial: TunerConfig) {
     }
     if (frame.timeMs < attackUntil) return held("noisy", level, frame.timeMs);
 
-    const med = median.push(frame.frequency);
-    const prev = ema.value;
-    if (prev !== undefined && Math.abs(centsBetween(med, prev)) > JUMP_RESET_CENTS) ema.reset();
-    const freq = ema.push(med);
+    const med = toCents(median.push(frame.frequency));
+    const prev = filter.value;
+    if (prev !== undefined && Math.abs(med - prev) > JUMP_RESET_CENTS) newNote();
+    const freq = toHz(filter.push(med, frame.clarity, frame.timeMs));
 
     const m = match(freq);
-    const within = Math.abs(m.cents) <= config.inTuneCents;
-    inTuneCount = within ? inTuneCount + 1 : 0;
+    latchInTune(Math.abs(m.cents), frame.timeMs);
+    const within = inTune || Math.abs(m.cents) <= config.inTuneCents;
     const direction: Direction = within ? "in-tune" : m.cents < 0 ? "flat" : "sharp";
 
     const reading: TunerReading = {
@@ -184,8 +238,9 @@ export function createTuner(initial: TunerConfig) {
       noteLabel: m.noteLabel,
       targetHz: m.targetHz,
       cents: m.cents,
+      shownCents: shown.push(m.cents),
       direction,
-      inTune: inTuneCount >= config.inTuneHoldFrames,
+      inTune,
       stringNumber: m.stringNumber,
       octaveHint: m.octaveHint,
       level,

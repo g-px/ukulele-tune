@@ -1,4 +1,13 @@
-import { DIAL, arcPath, centsToAngle, polar, tick, zonePath } from "../core/needle-geometry";
+import { NEEDLE_SPRING } from "../config";
+import {
+  DIAL,
+  arcPath,
+  centsToAngle,
+  polar,
+  springStep,
+  tick,
+  zonePath,
+} from "../core/needle-geometry";
 import { S } from "../strings";
 import { s, setAttr, setClass } from "./dom";
 
@@ -8,7 +17,12 @@ export interface NeedleView {
   stale: boolean;
   inTuneCents: number;
   label: string;
+  /** Clock of the frame being drawn; drives the needle's motion. */
+  timeMs: number;
 }
+
+/** A longer gap than this (first frame, tab was hidden) moves the needle without animating. */
+const MAX_GLIDE_MS = 100;
 
 export function createNeedle() {
   const zone = s("path", { class: "zone", d: zonePath(5) });
@@ -56,13 +70,27 @@ export function createNeedle() {
 
   let lastWindow = 5;
   let lastAngle = Number.NaN;
+  let spring = { position: 0, velocity: 0 };
+  let lastMs = Number.NaN;
+  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+
+  function glide(target: number, timeMs: number): number {
+    const dt = timeMs - lastMs;
+    lastMs = timeMs;
+    spring =
+      still?.matches || !(dt >= 0 && dt <= MAX_GLIDE_MS)
+        ? { position: target, velocity: 0 }
+        : springStep(spring, target, dt / 1000, NEEDLE_SPRING);
+    return spring.position;
+  }
 
   function update(v: NeedleView): void {
     if (v.inTuneCents !== lastWindow) {
       lastWindow = v.inTuneCents;
       setAttr(zone, "d", zonePath(v.inTuneCents));
     }
-    const angle = v.state === "idle" ? 0 : Math.round(centsToAngle(v.cents) * 10) / 10;
+    const target = v.state === "idle" ? 0 : centsToAngle(v.cents);
+    const angle = Math.round(glide(target, v.timeMs) * 20) / 20;
     if (angle !== lastAngle) {
       lastAngle = angle;
       hand.style.transform = `rotate(${angle}deg)`;

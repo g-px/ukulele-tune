@@ -125,8 +125,11 @@ from −45° to +45°. Angle = clamp(cents, −50, 50) × 0.9°. Ticks at −50,
 recompute the path when the window is ±3). Needle: line from pivot to
 r 150, width 4, round caps, inside `<g transform="rotate(angle 175 190)">`;
 pivot circle r 9. Colours: `--ok` when inTune, `--warn` when out, `--muted`
-when stale/silent. Transition `transform 80ms linear`; none under
-`prefers-reduced-motion`.
+when stale/silent. The angle follows the reading through a critically
+damped spring (`springStep`, `NEEDLE_SPRING` = 25 rad/s, about 0.2 s to
+settle; decision 20); it moves directly under `prefers-reduced-motion` or
+after a gap of more than 100 ms. Colour changes ease over 150 ms; dimming a
+held reading waits 120 ms so a one-frame dropout does not flicker.
 
 ## Copy (all in `src/strings.ts`)
 Exactly the strings visible on the artboards, plus the variants listed

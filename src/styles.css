@@ -387,6 +387,9 @@ button {
 .note.is-stale .note-label {
   color: var(--muted);
 }
+.note.is-stale .note-label {
+  transition: color 250ms linear 120ms;
+}
 .pill {
   margin-top: 8px;
   padding: 6px 16px;
@@ -411,6 +414,7 @@ button {
 }
 .note.is-stale .pill {
   opacity: 0.55;
+  transition: opacity 250ms linear 120ms;
 }
 
 /* Octave warning card */
@@ -467,6 +471,7 @@ button {
 .needle .zone {
   fill: var(--ok);
   opacity: 0.35;
+  transition: opacity 150ms linear;
 }
 .needle.is-in .zone {
   opacity: 0.9;
@@ -488,12 +493,15 @@ button {
   fill: var(--warn);
   font-weight: 700;
 }
+/* The hand's angle is animated in needle.ts; colour and dimming ease here so a
+   one-frame change of state does not flash. */
 .needle .hand {
   stroke: var(--muted);
-  transition: transform 80ms linear;
+  transition: stroke 150ms linear;
 }
 .needle .pivot {
   fill: var(--muted);
+  transition: fill 150ms linear;
 }
 .needle.is-in .hand {
   stroke: var(--ok);
@@ -507,9 +515,11 @@ button {
 .needle.is-out .pivot {
   fill: var(--warn);
 }
+/* Dimming waits a moment, so a note that drops out for a frame or two does not flicker. */
 .needle.is-stale .hand,
 .needle.is-stale .pivot {
   opacity: 0.45;
+  transition: opacity 250ms linear 120ms;
 }
 
 /* Strings panel */
@@ -883,6 +893,12 @@ input[type="range"] {
 
 @media (prefers-reduced-motion: reduce) {
   .needle .hand,
+  .needle .pivot,
+  .needle .zone,
+  .needle.is-stale .hand,
+  .needle.is-stale .pivot,
+  .note.is-stale .note-label,
+  .note.is-stale .pill,
   .switch,
   .switch::after {
     transition: none;

@@ -35,5 +35,6 @@ Read first: `docs/planning/design.md` (what to build, signatures, tests) and
 
 v1 (T01–T27) and M5 (beginner setup, guided tuning, pt-BR; T28–T39, spec in
 `docs/planning/beginner-setup.md`) are done; T38 waits only for the owner's
-review of the pt-BR copy. New work: add a task to `tasks.md` first, then
-follow the same rules.
+review of the pt-BR copy. M6 (T40, steady needle and in-tune latch) is done;
+change its constants only together with `test/core/stability.test.ts`.
+New work: add a task to `tasks.md` first, then follow the same rules.

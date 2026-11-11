@@ -31,6 +31,7 @@ const IN_TUNE: Partial<TunerReading> = {
   noteLabel: "G4",
   targetHz: 392,
   cents: 1,
+  shownCents: 1,
   direction: "in-tune",
   inTune: true,
   stringNumber: 4,
@@ -40,6 +41,7 @@ const FLAT_E: Partial<TunerReading> = {
   frequency: 325,
   noteLabel: "E4",
   cents: -23,
+  shownCents: -23,
   direction: "flat",
   stringNumber: 2,
 };
@@ -77,6 +79,11 @@ describe("noteView / needle", () => {
     const st = state({}, { ...FLAT_E, cents: 12, direction: "sharp" });
     expect(noteView(st).pill).toBe("loosen");
     expect(statusMessage(st)).toContain("lower the pitch");
+  });
+
+  it("shows the steadied whole-cent figure, not a fresh rounding", () => {
+    const st = state({}, { ...IN_TUNE, cents: 2.6, shownCents: 2 });
+    expect(noteView(st).cents).toBe("+2 ¢");
   });
 
   it("within the window but not yet held is not green", () => {

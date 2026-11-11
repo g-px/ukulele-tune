@@ -59,3 +59,29 @@ export function tick(cents: number): { x1: number; y1: number; x2: number; y2: n
   const b = polar(DIAL.tickInner, angle);
   return { x1: f(a.x), y1: f(a.y), x2: f(b.x), y2: f(b.y) };
 }
+
+export interface SpringState {
+  position: number;
+  velocity: number;
+}
+
+/**
+ * One exact step of a critically damped spring toward `target`: the needle
+ * glides to a new value without overshoot, whatever the frame rate.
+ * `stiffness` is the natural frequency in rad/s.
+ */
+export function springStep(
+  state: SpringState,
+  target: number,
+  seconds: number,
+  stiffness: number,
+): SpringState {
+  if (!(seconds > 0)) return state;
+  const offset = state.position - target;
+  const pull = state.velocity + stiffness * offset;
+  const decay = Math.exp(-stiffness * seconds);
+  return {
+    position: target + (offset + pull * seconds) * decay,
+    velocity: (state.velocity - stiffness * pull * seconds) * decay,
+  };
+}

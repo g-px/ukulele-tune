@@ -64,7 +64,7 @@ test, test:watch, e2e, check, prepare
 │   │   ├── tunings.ts
 │   │   ├── mpm.ts              McLeod pitch detector
 │   │   ├── signal.ts           rms, dbfs, highpass helper for tests
-│   │   ├── smoothing.ts        median, EMA, in-tune hold
+│   │   ├── smoothing.ts        median, pitch filter, sticky rounding
 │   │   ├── string-select.ts    nearest string, octave hint
 │   │   └── tuner.ts            frame → TunerReading state machine
 │   ├── audio/                  Web Audio glue, minimal logic
@@ -200,11 +200,24 @@ export function dbfs(rmsValue: number): number;     // 20*log10(rms), -Infinity 
 
 ```ts
 export class MedianFilter { constructor(size: number); push(v: number): number; reset(): void }
-export class Ema { constructor(alpha: number); push(v: number): number; reset(): void; get value(): number | undefined }
+export interface PitchFilterOptions { driftCents: number; noiseFloorCents: number; noisePerClarity: number; trendMs: number; trendDeadband: number; chase: number }
+export class PitchFilter { constructor(o: PitchFilterOptions); push(cents: number, clarity: number, timeMs: number): number; loosen(): void; reset(): void; get value(): number | undefined }
+export class StickyRound { constructor(margin: number); push(v: number): number; reset(): void }
 ```
 
-Tests: median of window 5 with one outlier returns the stable value; EMA
-converges; reset clears.
+`PitchFilter` is a one-dimensional Kalman filter over pitch in cents
+(decision 20). Expected frame error = `noiseFloorCents + noisePerClarity ×
+(1 − clarity)`; the pitch may drift `driftCents` per √s. The low-passed
+(`trendMs`) disagreement between frames and estimate, beyond `trendDeadband`
+frame errors, is added to the drift × `chase`, so a turned peg is followed.
+`loosen()` makes the next frame be taken as it comes (new pluck). All time-based.
+`StickyRound` rounds to a whole number and only changes once the value is
+more than 0.5 + margin away from the number shown.
+
+Tests: median of window 5 with one outlier returns the stable value; the
+filter follows a clear note in a few frames, moves < 3 cents on ±10 cents of
+jitter at clarity 0.93, catches up on a 30 cents/s ramp, gives the same
+result at 30/60/120 fps; sticky rounding does not flip around x.5.
 
 ### 4.6 `core/string-select.ts`
 
@@ -229,8 +242,11 @@ export interface TunerConfig {
   clarityThreshold: number;     // 0.9
   gateDbfs: number;             // -55
   medianSize: number;           // 5
-  emaAlpha: number;             // 0.3
-  inTuneHoldFrames: number;     // 3
+  filter: PitchFilterOptions;   // PITCH_FILTER
+  inTuneEnterMs: number;        // 100
+  inTuneExitMs: number;         // 150
+  inTuneExitFactor: number;     // 1.4
+  centsStickiness: number;      // 0.3
   holdMs: number;               // 1000: keep last reading visible after signal stops
 }
 export interface FrameInput { frequency: number; clarity: number; rmsDbfs: number; timeMs: number }
@@ -241,7 +257,8 @@ export interface TunerReading {
   targetHz: number;
   cents: number;                // signed, unclamped
   direction: "flat" | "sharp" | "in-tune";
-  inTune: boolean;              // stable for inTuneHoldFrames
+  shownCents: number;           // whole cents for the read-out (StickyRound)
+  inTune: boolean;              // latched, see rules
   stringNumber: 1|2|3|4|null;
   octaveHint: "none" | "octave-low" | "octave-high";
   level: number;                // 0..1 for the meter, from rmsDbfs mapped -60..0
@@ -258,14 +275,27 @@ Rules:
 - `rmsDbfs < gateDbfs` → status "silent" (but keep returning the previous
   note reading with `stale: true` until `holdMs` elapsed since last good frame).
 - clarity < threshold or frequency 0 → "noisy" (same hold behaviour).
-- Otherwise push frequency through median then EMA; compute match per mode:
+- Otherwise push frequency through the median, then (in cents) through
+  `PitchFilter` with the frame's clarity; a median value more than 50 cents
+  from the estimate starts a new note. Compute match per mode:
   auto → `nearestString`; manual → `matchString`; chromatic → `centsToNearest`.
 - direction: "in-tune" if |cents| ≤ inTuneCents else flat (cents < 0) or sharp.
-- `inTune` true only after `inTuneHoldFrames` consecutive in-window frames.
+- `inTune` is a latch: it turns on after `inTuneEnterMs` continuously inside
+  ±inTuneCents and off after `inTuneExitMs` continuously beyond
+  inTuneCents × `inTuneExitFactor`. It is kept while a reading is held
+  (`stale`) and cleared when the hold expires or a new note starts.
+  `direction` is "in-tune" while latched.
+- A level jump (`attack`) resets the median and loosens the filter, so the
+  same string plucked again after a turn of the peg reads right at once.
 - Changing mode/tuning/a4 resets filters and the hold counter.
 
-Tests: feed 20 frames at 392 Hz → inTune true from frame 3 (after median
-warm-up), direction "in-tune", string 4; one outlier frame at 784 Hz among
+Tests: feed 20 frames (16 ms apart) at 392 Hz → inTune true from 112 ms,
+direction "in-tune", string 4; the latch holds through a wobble to 6 cents,
+a one-frame dropout and the hold, and ends 150 ms after moving to 12 cents;
+`test/core/stability.test.ts` runs a modelled plucked string
+(`test/helpers/string-sim.ts`) through the detector and tuner: green once
+and never dropped, needle within ±3 cents after the attack, peg turn
+followed within 5 cents; one outlier frame at 784 Hz among
 392 Hz frames does not change the reading; frames below gate → "silent",
 stale reading kept for < holdMs then cleared; manual lock on string 2 with
 262 Hz input → cents ≈ −400, direction flat; chromatic 262 → "C4".
@@ -314,9 +344,11 @@ While a tone plays, `main.ts` pauses pitch processing (reading set to "silent").
 | CLARITY_THRESHOLD | 0.9 |
 | GATE_DBFS | −55 |
 | MEDIAN_SIZE | 5 |
-| EMA_ALPHA | 0.3 |
+| PITCH_FILTER | drift 3 cents/√s, noise floor 0.5 cents, 200 cents per unit of lost clarity, trend 150 ms, deadband 0.35, chase 8 |
+| IN_TUNE_ENTER_MS / IN_TUNE_EXIT_MS / IN_TUNE_EXIT_FACTOR | 100 / 150 / 1.4 |
+| CENTS_STICKINESS | 0.3 |
+| NEEDLE_SPRING | 25 rad/s |
 | IN_TUNE_CENTS (normal/precise) | 5 / 3 |
-| IN_TUNE_HOLD_FRAMES | 3 |
 | HOLD_MS | 1000 |
 | A4_MIN / A4_MAX / A4_DEFAULT | 415 / 466 / 440 |
 | NEEDLE_RANGE_CENTS | ±50 (display clamp) |

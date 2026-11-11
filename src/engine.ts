@@ -20,14 +20,17 @@ import {
   WRONG_WAY_GROW_CENTS,
   WRONG_WAY_SHOW_MS,
   WRONG_WAY_WINDOW_MS,
-  EMA_ALPHA,
+  CENTS_STICKINESS,
   HIGHPASS_HZ,
   HOLD_MS,
-  IN_TUNE_HOLD_FRAMES,
+  IN_TUNE_ENTER_MS,
+  IN_TUNE_EXIT_FACTOR,
+  IN_TUNE_EXIT_MS,
   LOWPASS_HZ,
   MAX_FREQ,
   MEDIAN_SIZE,
   MIN_FREQ,
+  PITCH_FILTER,
 } from "./config";
 import { createPitchDetector, type PitchDetector } from "./core/mpm";
 import { createWrongWayDetector } from "./core/wrong-way";
@@ -84,8 +87,11 @@ function tunerConfig(settings: Settings, mode: TunerMode): TunerConfig {
     clarityThreshold: CLARITY_THRESHOLD,
     gateDbfs: settings.gateDbfs,
     medianSize: MEDIAN_SIZE,
-    emaAlpha: EMA_ALPHA,
-    inTuneHoldFrames: IN_TUNE_HOLD_FRAMES,
+    filter: PITCH_FILTER,
+    inTuneEnterMs: IN_TUNE_ENTER_MS,
+    inTuneExitMs: IN_TUNE_EXIT_MS,
+    inTuneExitFactor: IN_TUNE_EXIT_FACTOR,
+    centsStickiness: CENTS_STICKINESS,
     holdMs: HOLD_MS,
     attackSkipMs: ATTACK_SKIP_MS,
     attackJumpDb: ATTACK_JUMP_DB,
@@ -143,14 +149,16 @@ export function createEngine(store: Store<AppState>, storage: KeyValueStorage | 
     const pitch =
       level >= st.settings.gateDbfs ? detector.detect(buffer) : { frequency: 0, clarity: 0 };
     const reading = tuner.process({ ...pitch, rmsDbfs: level, timeMs: now });
-    if (reading.inTune && !st.reading.inTune) navigator.vibrate?.(30);
+    // The in-tune latch outlives the note while its reading is held; these need a live one.
+    const liveInTune = reading.inTune && !reading.stale;
+    if (liveInTune && !st.reading.inTune) navigator.vibrate?.(30);
     if (st.setup?.step === "listen") feedListen(st.setup, reading, now);
     const wrongWay = watchWrongWay(st, reading, now);
     if (wrongWay !== st.wrongWay) store.set({ wrongWay });
     if (st.guide && !st.guide.done) {
       const next = stepGuide(
         st.guide,
-        { stringNumber: reading.stringNumber, inTune: reading.inTune, timeMs: now },
+        { stringNumber: reading.stringNumber, inTune: liveInTune, timeMs: now },
         GUIDE_HOLD_MS,
       );
       if (next !== st.guide) {

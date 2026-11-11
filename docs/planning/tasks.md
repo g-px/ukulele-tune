@@ -183,6 +183,25 @@ commit, `npm run check` green, push to `main`.
   mentions the setup, `CLAUDE.md` status line, decisions if anything changed
   while implementing.
 
+## M6 — Steady reading
+
+Report from the owner on a real ukulele: the needle is jumpy and never rests
+on the in-tune mark.
+
+- [x] **T40 Steady needle and in-tune latch.** Cause (reproduced with
+  `test/helpers/string-sim.ts`): as a note fades the pitch estimate gets
+  noisier, and the frame-count EMA followed it; `inTune` had no hysteresis and
+  was dropped whenever one frame was unclear or the note was held.
+  `core/smoothing.ts`: `PitchFilter` (clarity-weighted, time-based, catches up
+  on sustained movement) and `StickyRound` replace `Ema`. `core/tuner.ts`:
+  in-tune latch (enter 100 ms inside the window, leave 150 ms beyond
+  window × 1.4, kept while the reading is held), `shownCents`, re-acquire on
+  a new pluck. Needle moves on a critically damped spring
+  (`springStep`), dimming is delayed so dropouts do not flicker.
+  Tests: `stability.test.ts` (modelled string through the real detector and
+  tuner), filter, latch, spring; e2e samples the needle angle per frame
+  (glides in, then holds within 0.5°). Decision 20, design §4.5/§4.7/§6.
+
 ## Backlog (not scheduled)
 Intonation check, relative-tuning helper, custom tunings UI, N-string
 instruments, AudioWorklet path, strobe display, real-ukulele WAV fixtures,
